@@ -1,0 +1,7 @@
+{% extends "fbauth/base.html" %}
+{% block title %}
+Log in to Facebook
+{% endblock %}
+{% block body %}
+<a href="https://www.facebook.com/dialog/oauth?client_id={{ app_id }}&redirect_uri={{ redirect_url }}">Log in to FaceBook</a>
+{% endblock %}

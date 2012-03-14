@@ -1,0 +1,12 @@
+{% load dajaxice_templatetags %}
+
+<html>
+<head>
+<title>{% block title %}Senior project template{% endblock %}</title>
+{% dajaxice_js_import %}
+<script src="{{ MEDIA_URL }}jquery.dajax.core.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+{% block body %}Hello world{% endblock %}
+</body>
+</html>
