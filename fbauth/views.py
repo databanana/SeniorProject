@@ -16,7 +16,7 @@ def login(request):
 	print "In login view"
 	print request.session
 	app_id = "156643857790426"
-	app_secret = "0329a0656120b580dc341abb2c5fc790"
+	app_secret = open('appsecret','r').read()
 	redirect_url = "http://"+request.get_host() + reverse('fbauth.views.login')
 	#print redirect_url
 	#redirect_url = 'http://localhost:8000/fbauth/login'
@@ -47,6 +47,6 @@ def grapher(request):
 	u = request.session['fbuser']
 	f = u.get_friends()
 	if (not u.recently_updated()):
-		u.create_models()
+		u.create_friends()
 	return render_to_response('fbauth/graph.html', context_instance = RequestContext(request))
 	#return HttpResponse('<br />'.join([x['name'] for  x in f]))

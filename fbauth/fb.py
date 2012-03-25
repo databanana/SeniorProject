@@ -72,27 +72,28 @@ class Fbuser:
 			return (datetime.date.today()-me.last_updated) < td
 
 
-
-	def create_models(self):
+	def create_friends(self):
 		friends = self.get_friends()
 		try:
 			me = Person.objects.get(id=self.id)
 		except Person.DoesNotExist:
 			me = Person.objects.create(id = self.id, name = self.name)
 
-		#Get cursor from db wrapper
-		cursor = connection.cursor()
-		cursor.write("BEGIN TRANSACTION")
-
 		for friend in friends:
 			friendlookup = Person.objects.filter(id=friend['id'])
 			if len(friendlookup) == 0:
-				#p = Person.objects.create(name = friend['name'], id = friend['id'])
-				#p.save()
+				p = Person.objects.create(name = friend['name'], id = friend['id'])
+				p.save()
 				me.friends.add(p)
 			else:
 				me.friends.add(friendlookup[0])
 		me.save()
+
+	def connect_friends(self):
+
+		#Get cursor from db wrapper
+		cursor = connection.cursor()
+		#cursor.write("BEGIN TRANSACTION")
 
 		#Super slow. Replace with a custom SQL insert query
 		#MySQL version:
