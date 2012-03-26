@@ -4,6 +4,7 @@ import json
 from fbauth.models import Person
 from django.db import connection, transaction
 import datetime
+from collections import deque
 
 class Fbuser:
 	def __init__(self, access_token):
@@ -11,6 +12,7 @@ class Fbuser:
 		data = self.read_and_parse_json('/me')
 		self.name = data['name']
 		self.id = data['id']
+		self.updated_friends_queue = deque()
 
 	def read_and_parse_json(self, url, argdict = {}):
 		#argstr = '&'.join([x[0] + '=' + x[1] for x in argdict.items()])
@@ -63,6 +65,7 @@ class Fbuser:
 		return data
 
 	def recently_updated(self, td = datetime.timedelta(2)):
+		return False
 		#Default definition of "recently" is the past 2 days
 		try:
 			me = Person.objects.get(id = self.id)
@@ -90,7 +93,7 @@ class Fbuser:
 		me.save()
 
 	def connect_friends(self):
-
+		print "Connecting friends"
 		#Get cursor from db wrapper
 		cursor = connection.cursor()
 		#cursor.write("BEGIN TRANSACTION")
@@ -114,13 +117,28 @@ class Fbuser:
 		insertstr = "INSERT OR IGNORE INTO fbauth_person_friends (from_person_id, to_person_id) VALUES"
 		#values = ''.join([insertstr+"("+r['uid1'] + "," + r['uid2'] + ");" + insertstr + "("+r['uid2']+","+r['uid1']+");" for r in mf])
 
+		last_user_updated = None
 		cursor.execute("BEGIN TRANSACTION")
+		updated_friends_count = 0
 		for r in mf:
-			#print "executing query " + "%s (\"%s\",\"%s\")" % (insertstr, r['uid1'], r['uid2'])
-			##WHYYYY isn't this working :( :(
+			if (r['uid1'] != last_user_updated and last_user_updated != None):
+				updated_friends_count += 1
+			if (updated_friends_count > 19):
+				print "Committed transaction"
+				print "Updated friends to %s" % last_user_updated
+				updated_friends_count = 0
+				transaction.commit_unless_managed()
+				cursor.execute("BEGIN TRANSACTION")
+				me = Person.objects.get(id=self.id)
+				me.refreshed_to = last_user_updated
+				me.save()
 			cursor.execute(insertstr+" (%s,%s)", params=[str(r['uid1']), str(r['uid2'])])
 			cursor.execute(insertstr+" (%s,%s)", params=[str(r['uid2']), str(r['uid1'])])
+			last_user_updated = r['uid1']
 		transaction.commit_unless_managed()
+		me = Person.objects.get(id=self.id)
+		me.refreshed_to = last_user_updated
+		me.save()
 
 
 		#SLOWWWW version:

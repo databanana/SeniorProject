@@ -5,6 +5,8 @@ from urlparse import parse_qs
 from django.core.urlresolvers import reverse
 from fb import Fbuser
 from django.template import RequestContext
+from threading import Thread
+from fbauth.models import Person
 
 
 
@@ -47,6 +49,13 @@ def grapher(request):
 	u = request.session['fbuser']
 	f = u.get_friends()
 	if (not u.recently_updated()):
+		print("Not recently updated")
 		u.create_friends()
+		me = Person.objects.get(id=u.id)
+		me.refreshed_from = ""
+		me.refreshed_to = ""
+		me.save()
+		connection_processor = Thread(target=u.connect_friends)
+		connection_processor.start()
 	return render_to_response('fbauth/graph.html', context_instance = RequestContext(request))
 	#return HttpResponse('<br />'.join([x['name'] for  x in f]))

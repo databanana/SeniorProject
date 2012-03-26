@@ -243,7 +243,7 @@ function plot_friends(graphdata) {
       }
     },
     //Number of iterations for the FD algorithm
-    iterations: 200,
+    iterations: 1,
     //Edge length
     levelDistance: 130,
     // Add text to the labels. This method is only triggered
@@ -269,7 +269,7 @@ function plot_friends(graphdata) {
 //#####
 	fd.loadJSON(graphdata);
 	  fd.computeIncremental({
-    iter: 15,
+    iter: 10,
     property: 'end',
     onStep: function(perc){
       //Log.write(perc + '% loaded...');
@@ -283,10 +283,20 @@ function plot_friends(graphdata) {
       });
     }
   });
+  window["fd"] = fd;
+}
+
+function add_connections(connectiondata) {
+  alert("Adding connections!")
+  for (i=0; i<connectiondata.length; i++) {
+    fd.graph.addAdjacence(connectiondata[i][0], connectiondata[i][1], null);
+  }
 }
 </script>
 
 <input type="button" name="Request Friends" value="Request Friends" id="requestfriends" onclick="Dajaxice.fbauth.graph_friends(Dajax.process);">
+
+<input type="button" name="Update connections" value="Update connections" id="updateconnections" onclick="Dajaxice.fbauth.update_connections(Dajax.process);">
 
 <div id="infovis"></div>
 {% endblock %}
