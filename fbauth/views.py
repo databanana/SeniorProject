@@ -51,10 +51,6 @@ def grapher(request):
 	if (not u.recently_updated()):
 		print("Not recently updated")
 		u.create_friends()
-		me = Person.objects.get(id=u.id)
-		me.refreshed_from = ""
-		me.refreshed_to = ""
-		me.save()
 		connection_processor = Thread(target=u.connect_friends)
 		connection_processor.start()
 	return render_to_response('fbauth/graph.html', context_instance = RequestContext(request))

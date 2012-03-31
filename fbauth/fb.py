@@ -65,7 +65,7 @@ class Fbuser:
 		return data
 
 	def recently_updated(self, td = datetime.timedelta(2)):
-		return False
+		#return False
 		#Default definition of "recently" is the past 2 days
 		try:
 			me = Person.objects.get(id = self.id)
@@ -117,28 +117,11 @@ class Fbuser:
 		insertstr = "INSERT OR IGNORE INTO fbauth_person_friends (from_person_id, to_person_id) VALUES"
 		#values = ''.join([insertstr+"("+r['uid1'] + "," + r['uid2'] + ");" + insertstr + "("+r['uid2']+","+r['uid1']+");" for r in mf])
 
-		last_user_updated = None
 		cursor.execute("BEGIN TRANSACTION")
-		updated_friends_count = 0
 		for r in mf:
-			if (r['uid1'] != last_user_updated and last_user_updated != None):
-				updated_friends_count += 1
-			if (updated_friends_count > 19):
-				print "Committed transaction"
-				print "Updated friends to %s" % last_user_updated
-				updated_friends_count = 0
-				transaction.commit_unless_managed()
-				cursor.execute("BEGIN TRANSACTION")
-				me = Person.objects.get(id=self.id)
-				me.refreshed_to = last_user_updated
-				me.save()
 			cursor.execute(insertstr+" (%s,%s)", params=[str(r['uid1']), str(r['uid2'])])
 			cursor.execute(insertstr+" (%s,%s)", params=[str(r['uid2']), str(r['uid1'])])
-			last_user_updated = r['uid1']
 		transaction.commit_unless_managed()
-		me = Person.objects.get(id=self.id)
-		me.refreshed_to = last_user_updated
-		me.save()
 
 
 		#SLOWWWW version:
@@ -156,6 +139,7 @@ class Fbuser:
 		#p1.save()
 		#print "Saved friends for %s" % p1.name
 		print "Finished creating models"
+
 
 	def get_friends_graph(self):
 		print "Started printing friends graph"
@@ -178,4 +162,27 @@ class Fbuser:
 		print "Created result"
 		return result
 
+	def get_friend_ids(self):
+		print "Creating list of friend IDs (all node IDs)"
+		user = Person.objects.select_related().get(id=self.id)
+		return [f.id for f in user.friends.all()]
+
+	def get_friends_links(self):
+		user = Person.objects.select_related().get(id=self.id)
+		friends = user.friends.all()
+		#Try this out
+		return [[p1.id, p2.id] for p1 in friends if p1.id != self.id for p2 in p1.friends.all() if p2.id != self.id]
+		links = []
+		i = 0
+		for p1 in friends:
+			if p1 == user:
+				continue
+			else:
+				for p2 in p1.friends.all():
+					if p2 in friends[i:] and p2 != user:
+						links.append([p1.id, p2.id])
+					else:
+						continue
+			i += 1
+		return links
 
