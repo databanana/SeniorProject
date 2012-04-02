@@ -4,12 +4,54 @@
 {%block head %}
 <script type="text/javascript" src="{{ STATIC_URL }}raphael.js"></script>
 <script src="{{ STATIC_URL }}grapher.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}jquery.showLoading.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}jquery-ui.js"></script>
+<link type="text/css" href="{{ STATIC_URL }}custom-theme/jquery-ui-1.8.18.custom.css" rel="stylesheet" />
+<style type="text/css">
+.loading-indicator {
+  height: 80px;
+  width: 80px;
+  background: url( '{{ STATIC_URL }}images/loading.gif' );
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.loading-indicator-overlay {
+  background-color: #FFFFFF;
+  opacity: 0.6;
+  filter: alpha(opacity = 60);
+}
+
+#overlay {
+  background-color: #FFFFFF;
+  opacity: 0.6;
+  filter: alpha(opacity = 60);
+  z-index: 5;
+}
+
+#loadingcircle {
+  width: 31px;
+  height: 31px;
+}
+
+#loadingbar {
+  opacity: 1;
+  filter: alpha(opacity=100);
+  width: 200px;
+  height: 50px;
+}
+</style>
 {% endblock %}
 
 {% block body %}
-<input type="button" name="Request Friends" value="Request Friends" id="requestfriends" onclick="Dajaxice.fbauth.get_friend_ids(Dajax.process);">
-<input type="button" name="Position Friends" value = "Position Friends" id = "positionfriends" onclick="Dajaxice.fbauth.position_friends(Dajax.process, {'engine': 'sfdp', 'width': $('#papercontainer').width(), 'height':$('#papercontainer').height()})">
-<input type="button" name="Connect Friends" value="Connect Friends" id="connectfriends" onclick="Dajaxice.fbauth.connect_friends(Dajax.process);">
+<input type="button" name="Request Friends" value="Request Friends" id="requestfriends" onclick="$('#overlay').show();$('#loadingcircle').show();Dajaxice.fbauth.get_friend_ids(Dajax.process);">
+<input type="button" name="Position Friends" value = "Position Friends" id = "positionfriends" onclick="$('#overlay').show();$('#loadingcircle').show();Dajaxice.fbauth.position_friends(Dajax.process, {'engine': 'sfdp', 'width': $('#papercontainer').width(), 'height':$('#papercontainer').height()})">
+<input type="button" name="Connect Friends" value="Connect Friends" id="connectfriends" onclick="$('#overlay').show();$('#loadingcircle').show();Dajaxice.fbauth.connect_friends(Dajax.process);">
 
-<div id="papercontainer"></div>
+<div id="papercontainer">
+</div>
+<div id="overlay">
+  <div id="loadingcircle"><img src="{{ STATIC_URL}}images/loading.gif" /></div>
+  <div id="loadingbar"></div>
+</div>
 {% endblock %}

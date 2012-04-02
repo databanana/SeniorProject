@@ -12,11 +12,11 @@ def get_friend_ids(request):
 	s = request.session
 	user = s['fbuser']
 	print "Got fbuser object"
-	ids = user.get_friend_ids()
+	names = user.get_friend_names()
 	#print json.dumps(graph[0:50])
 	print("Got result")
 	#dajax.alert("hello world")
-	dajax.add_data(ids, 'grapher.add_nodes')
+	dajax.add_data(names, 'grapher.add_nodes')
 	return dajax.json()
 
 @dajaxice_register

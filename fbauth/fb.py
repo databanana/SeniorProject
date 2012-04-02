@@ -167,22 +167,32 @@ class Fbuser:
 		user = Person.objects.select_related().get(id=self.id)
 		return [f.id for f in user.friends.all()]
 
+	def get_friend_names(self):
+		user = Person.objects.select_related().get(id=self.id)
+		return {f.id:f.name for f in user.friends.all()}
+
 	def get_friends_links(self):
 		user = Person.objects.select_related().get(id=self.id)
 		friends = user.friends.all()
 		#Try this out
-		return [[p1.id, p2.id] for p1 in friends if p1.id != self.id for p2 in p1.friends.all() if p2.id != self.id]
+		seen = set()
+		seen_link = lambda l: (tuple(l) in seen) or ((l[1], l[0]) in seen)
+		set_seen = lambda l: seen.add(tuple(l))
+
 		links = []
-		i = 0
+
 		for p1 in friends:
-			if p1 == user:
+			if p1.id == self.id:
 				continue
 			else:
 				for p2 in p1.friends.all():
-					if p2 in friends[i:] and p2 != user:
+					if p2.id == self.id:
+						continue
+					elif not seen_link([p1.id, p2.id]):
 						links.append([p1.id, p2.id])
+						set_seen([p1.id, p2.id])
 					else:
 						continue
-			i += 1
+
 		return links
 
