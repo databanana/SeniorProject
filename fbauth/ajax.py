@@ -46,12 +46,12 @@ def position_friends(request, engine, width, height):
 	max_y = max(y_coords)
 	x_shift = -1 * min_x
 	y_shift = -1*min_y
-	x_scale = float(width)/float(max_x-min_x)
-	y_scale = float(height)/float(max_y-min_y)
+	x_scale = float(width-20)/float(max_x-min_x)
+	y_scale = float(height-20)/float(max_y-min_y)
 	scaled_layout = {}
 	for node in layout:
-		x = int((layout[node][0] + x_shift) * x_scale)
-		y = int((layout[node][1] + y_shift) * y_scale)
+		x = int((layout[node][0] + x_shift) * x_scale)+10
+		y = int((layout[node][1] + y_shift) * y_scale)+10
 		scaled_layout[node] = (x,y)
 	print scaled_layout
 	dajax.add_data(scaled_layout, 'grapher.set_positions')

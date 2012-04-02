@@ -1,7 +1,7 @@
 //color scheme: http://colorschemedesigner.com/#3i31Tw0w0w0w0
 window.onload = function() {
-    $("#papercontainer").width($(window).width());
-    $("#papercontainer").height($(window).height());
+    //$("#papercontainer").width($(window).width());
+    //$("#papercontainer").height($(window).height());
     //$("#papercontainer").width(2000);
     //$("#papercontainer").height(2000);
     var pwidth = $("#papercontainer").width();
@@ -26,6 +26,16 @@ window.onload = function() {
     $("#loadingcircle").hide();
     $("#overlay").hide();
 
+    //Set up buttons
+    $("input:button").button();
+
+    $('#controltoggle h3').click(function() {$(this).next().toggle('blind');$(this).toggleClass('ui-corner-bottom'); return false; }).next().hide();
+    $('#controltoggle h3').wrapInner('<a href="#" />');
+    $('#controltoggle h3').prepend('<span></span>');
+    $('#controltoggle h3 span').addClass('ui-icon ui-icon-triangle-1-e');
+    $("#controltoggle").addClass('ui-helper-reset ui-widget');
+    $("#controltoggle h3").addClass('ui-helper-reset ui-widget-header ui-state-default ui-corner-top ui-corner-bottom');
+    $("#controltoggle div").addClass('ui-helper-reset ui-widget-content ui-corner-bottom');
 
     var fadeInDuration = 1500;
     
@@ -149,6 +159,7 @@ window.onload = function() {
             }
         }
         this.highlight = function() {
+            this.circle.toFront();
             if (this.moving == false) this.drawName();
             this.circle.animate(nodeHoverAttr, 100, '>');
         }
@@ -213,7 +224,7 @@ window.onload = function() {
     grapher.add_nodes = function(node_names) {
         //console.log(node_ids);
         for (id in node_names) {
-            graph[id] = new Node(id, node_names[id], Math.floor(Math.random()*pwidth), Math.floor(Math.random()*pheight), 10);
+            graph[id] = new Node(id, node_names[id], Math.floor(Math.random()*(pwidth-20))+10, Math.floor(Math.random()*(pheight-20))+10, 10);
         }
         $("#loadingcircle").hide();
         $("#overlay").hide();
