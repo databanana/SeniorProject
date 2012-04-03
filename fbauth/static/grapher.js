@@ -5,6 +5,36 @@ $(document).ready(function() {
     var paper = new Raphael($("#papercontainer")[0], pwidth, pheight);
     console.log("height:" + pheight);
 
+    //Set up variables
+
+    var fadeInDuration = 1500;
+    
+    var nodeAttr = {
+        fill: "#ff7373",
+        stroke: "#ff4040",
+        'stroke-width': 3,
+        'r': 10,
+    };
+    
+    var nodeHoverAttr = {
+        'stroke-width': 5,
+        'r': 10,
+    };
+    
+    var edgeAttr = {
+        stroke: "#33CCCC",
+        'stroke-width': 0.5,
+    };
+    
+    var edgeHoverAttr = {
+        'stroke-width': 1,
+    };
+
+    var nameattr = {
+        'fill': '#999999',
+        'opacity': 0.6,
+    }
+
     //Set up overlays
     $("#overlay").width(pwidth);
     $("#overlay").height(pheight);
@@ -28,6 +58,7 @@ $(document).ready(function() {
   $("#linewidthselector").slider({'min':0.1,
     'max': 4,
     'step':0.1,
+    'value': edgeAttr['stroke-width'],
     'slide': function(event, ui) {
         $("#linewidth").val(ui.value);
     },
@@ -35,13 +66,18 @@ $(document).ready(function() {
         grapher.setLineWidth(ui.value);
     },
   });
-  $("#nodesizeselector").slider({'min':1, 'max':50, 'slide': function(event, ui) {
+
+  $("#linewidth").val(edgeAttr['stroke-width']);
+
+  $("#nodesizeselector").slider({'min':1, 'max':50, 'value':nodeAttr['r'], slide: function(event, ui) {
         $("#nodesize").val(ui.value);
     },
     'stop': function(event, ui) {
         grapher.setCircleRadius(ui.value);
     }
   });
+
+  $("#nodesize").val(nodeAttr['r']);
 
   $("h3 + div").each(function() {$(this).prev().andSelf().wrapAll("<div class='controlwrapper' />")});
   $(".controlwrapper").addClass('ui-helper-reset ui-corner-all ui-widget');
@@ -111,33 +147,7 @@ $(document).ready(function() {
     $(this).contents().contents().first().toggleClass('ui-icon-triangle-1-s');
   });
 
-    //Set up variables
-
-    var fadeInDuration = 1500;
-    
-    var nodeAttr = {
-        fill: "#ff7373",
-        stroke: "#ff4040",
-        'stroke-width': 3,
-    };
-    
-    var nodeHoverAttr = {
-        'stroke-width': 5,
-    };
-    
-    var edgeAttr = {
-        stroke: "#33CCCC",
-        'stroke-width': 3,
-    };
-    
-    var edgeHoverAttr = {
-        'stroke-width': 5,
-    };
-
-    var nameattr = {
-        'fill': '#999999',
-        'opacity': 0.6,
-    }
+    //Set up graph objects
 
     var Node = function(id, name, x, y, r) {
         this.name = name;
@@ -289,6 +299,9 @@ $(document).ready(function() {
 
     window.grapher = {};
 
+    grapher.loadedNodes = false;
+    grapher.loadedEdges = false;
+
     grapher.graph = {};
 
     grapher.edges = [];
@@ -415,8 +428,13 @@ $(document).ready(function() {
     }
 
     grapher.setCircleRadius = function(r) {
+        nodeAttr['stroke-width'] = r/6;
+        nodeAttr['r'] = r;
+        nodeHoverAttr['stroke-width'] = r*1.5/6;
+        nodeHoverAttr['r'] = r;
+        console.log("Set stroke width to " + (r/6));
         for (i in grapher.graph) {
-            grapher.graph[i].circle.attr('r', r);
+            grapher.graph[i].circle.attr(nodeAttr);
         }
     }
  
