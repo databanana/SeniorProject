@@ -1,7 +1,7 @@
 from urllib2 import urlopen
 from urllib import urlencode
 import json
-from fbauth.models import Person
+from fbauth.models import Person, Connection
 from django.db import connection, transaction
 import datetime
 from collections import deque
@@ -13,6 +13,7 @@ class Fbuser:
 		self.name = data['name']
 		self.id = data['id']
 		self.updated_friends_queue = deque()
+		self.links = None
 
 	def read_and_parse_json(self, url, argdict = {}):
 		#argstr = '&'.join([x[0] + '=' + x[1] for x in argdict.items()])
@@ -87,7 +88,10 @@ class Fbuser:
 			if len(friendlookup) == 0:
 				p = Person.objects.create(name = friend['name'], id = friend['id'])
 				p.save()
-				me.friends.add(p)
+				forwardconnection = Connection.objects.create(from_person_id=self.id, to_person_id = friend['id'])
+				reverseconnection = Connection.objects.create(to_person_id=self.id, from_person_id = friend['id'])
+				forwardconnection.save()
+				reverseconnection.save()
 			else:
 				me.friends.add(friendlookup[0])
 		me.save()
@@ -114,7 +118,7 @@ class Fbuser:
 
 		#SQLite:
 		mf = self.get_mutual_friends()
-		insertstr = "INSERT OR IGNORE INTO fbauth_person_friends (from_person_id, to_person_id) VALUES"
+		insertstr = "INSERT OR IGNORE INTO fbauth_connection (from_person_id, to_person_id) VALUES"
 		#values = ''.join([insertstr+"("+r['uid1'] + "," + r['uid2'] + ");" + insertstr + "("+r['uid2']+","+r['uid1']+");" for r in mf])
 
 		cursor.execute("BEGIN TRANSACTION")
@@ -172,29 +176,24 @@ class Fbuser:
 		return {f.id:f.name for f in user.friends.all()}
 
 	def get_friends_links(self):
-		user = Person.objects.get(id=self.id)
-		friends = user.friends.all()
-		#Try this out
-		seen = set()
-		seen_link = lambda l: (tuple(l) in seen) or ((l[1], l[0]) in seen)
-		set_seen = lambda l: seen.add(tuple(l))
+		if (self.links != None):
+			return self.links
+		else:
+			user = Person.objects.get(id=self.id)
+			friends = user.friends.all()
+			#Try this out
+			seen = set()
+			seen_link = lambda l: (tuple(l) in seen) or ((l[1], l[0]) in seen)
+			set_seen = lambda l: seen.add(tuple(l))
 
-		links = []
+			links = []
 
-		print "Going to examine %d friends" % len(friends)
-		for p1 in friends:
-			if p1.id == self.id:
-				continue
-			else:
-				#for p2 in p1.friends.all():
-				for p2 in p1.friends.filter(id__in=friends):
-					if p2.id == self.id:
-						continue
-					elif not seen_link([p1.id, p2.id]):
-						links.append([p1.id, p2.id])
-						set_seen([p1.id, p2.id])
-					else:
-						continue
+			friend_connections = Connection.objects.filter(from_person__in=friends, to_person__in=friends)
 
-		return links
+			for l in friend_connections:
+				if not seen_link([l.from_person_id, l.to_person_id]):
+					links.append([l.from_person_id, l.to_person_id])
+					set_seen([l.from_person_id, l.to_person_id])
+			self.links = links
+			return links
 
