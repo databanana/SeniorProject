@@ -35,7 +35,7 @@ def position_friends(request, engine, width, height, auto = False):
 	print "Got nodes"
 	links = user.get_friends_links()
 	print "Got links"
-	print links
+	#print links
 	G = nx.Graph()
 	G.add_nodes_from(nodes)
 	G.add_edges_from(links)
@@ -56,7 +56,7 @@ def position_friends(request, engine, width, height, auto = False):
 		x = int((layout[node][0] + x_shift) * x_scale)+10
 		y = int((layout[node][1] + y_shift) * y_scale)+10
 		scaled_layout[node] = (x,y)
-	print scaled_layout
+	#print scaled_layout
 	if auto:
 		dajax.add_data(scaled_layout, 'grapher.auto_set_positions')
 	else:

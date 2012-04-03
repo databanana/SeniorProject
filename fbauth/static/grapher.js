@@ -25,12 +25,21 @@ $(document).ready(function() {
 
     //Set up controls
 
-  $("#linewidthselector").slider({'min':0.1, 'max': 4, 'step':0.1, 'slide': function(event, ui) {
-    $("#linewidth").val(ui.value);
-    }
+  $("#linewidthselector").slider({'min':0.1,
+    'max': 4,
+    'step':0.1,
+    'slide': function(event, ui) {
+        $("#linewidth").val(ui.value);
+    },
+    'stop':function(event, ui) {
+        grapher.setLineWidth(ui.value);
+    },
   });
   $("#nodesizeselector").slider({'min':1, 'max':50, 'slide': function(event, ui) {
-    $("#nodesize").val(ui.value);
+        $("#nodesize").val(ui.value);
+    },
+    'stop': function(event, ui) {
+        grapher.setCircleRadius(ui.value);
     }
   });
 
@@ -287,7 +296,8 @@ $(document).ready(function() {
         $(".loadingtext").text("Positioning friends...");
         for (id in node_positions) {
             //console.log(graph[id]);
-            graph[id].position(node_positions[id][0], node_positions[id][1]);
+            if (id in graph) graph[id].position(node_positions[id][0], node_positions[id][1]);
+            else console.log(id);
         }
         grapher.positionAllEdges();
         //grapher.revealAllEdges();
@@ -305,6 +315,7 @@ $(document).ready(function() {
         var i = 0;
         var add = function() {
                 for (; i < edges.length; i++) {
+                    if (!(edges[i][0] in graph) || !(edges[i][1] in graph)) continue;
                     var node1 = graph[edges[i][0]];
                     var node2 = graph[edges[i][1]];
                     var e = node1.addEdge(node2);
@@ -374,6 +385,24 @@ $(document).ready(function() {
     grapher.positionAllEdges = function() {
         for (i in grapher.edges) {
             grapher.edges[i].drawLine();
+        }
+    }
+
+    grapher.setLineWidth = function(w) {
+        edgeAttr['stroke-width'] = w;
+        edgeHoverAttr['stroke-width'] = Math.ceil(w*1.5);
+        grapher.updateAllEdgeAttr();
+    }
+
+    grapher.updateAllEdgeAttr = function () {
+        for (i in grapher.edges) {
+            grapher.edges[i].line.attr(edgeAttr);
+        }
+    }
+
+    grapher.setCircleRadius = function(r) {
+        for (i in grapher.graph) {
+            grapher.graph[i].circle.attr('r', r);
         }
     }
  

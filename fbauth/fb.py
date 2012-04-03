@@ -172,7 +172,7 @@ class Fbuser:
 		return {f.id:f.name for f in user.friends.all()}
 
 	def get_friends_links(self):
-		user = Person.objects.select_related().get(id=self.id)
+		user = Person.objects.get(id=self.id)
 		friends = user.friends.all()
 		#Try this out
 		seen = set()
@@ -181,12 +181,18 @@ class Fbuser:
 
 		links = []
 
+		print "Going to examine %d friends" % len(friends)
 		for p1 in friends:
+			print "examining friend %s" % str(p1)
+			if p1.name == "Kate Benedict":
+				print "what....??"
 			if p1.id == self.id:
 				continue
 			else:
 				for p2 in p1.friends.all():
-					if p2.id == self.id:
+					if (p1.name=="Kate Benedict" or p2.name == "Kate Benedict"):
+						print "Link: %s, %s" %(p1.name, p2.name)
+					if p2.id == self.id or p2 not in friends:
 						continue
 					elif not seen_link([p1.id, p2.id]):
 						links.append([p1.id, p2.id])

@@ -46,7 +46,10 @@ def grapher(request):
 		print request.session
 		return HttpResponseRedirect(reverse('fbauth.views.index'))
 	if ('fbuser' not in request.session): request.session['fbuser'] = Fbuser(request.session['access_token'])
+
+
 	u = request.session['fbuser']
+	print "Access token: %s" % u.access_token
 	f = u.get_friends()
 	if (not u.recently_updated()):
 		print("Not recently updated")
