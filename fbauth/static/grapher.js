@@ -1,13 +1,7 @@
 //color scheme: http://colorschemedesigner.com/#3i31Tw0w0w0w0
-window.onload = function() {
-    //$("#papercontainer").width($(window).width());
-    //$("#papercontainer").height($(window).height());
-    //$("#papercontainer").width(2000);
-    //$("#papercontainer").height(2000);
+$(document).ready(function() {
     var pwidth = $("#papercontainer").width();
-    //var pheight = $("#papercontainer").height();
     var pheight =  $("#papercontainer").height();
-    //var paper = new Raphael(0,0, $(window).width(), $(window).height());    
     var paper = new Raphael($("#papercontainer")[0], pwidth, pheight);
     console.log("height:" + pheight);
 
@@ -16,26 +10,85 @@ window.onload = function() {
     $("#overlay").height(pheight);
     $("#overlay").position({'of': $("#papercontainer")});
 
-    $("#loadingcircle").position({'of': $("#overlay")});
+    $(".loadingindicator").position({'of': $("#overlay"), 'collision': 'none'});
 
-    $("#loadingbar").position({'of': $("#overlay")});
+    //$("#loadingbarwrapper").position({'of': $("#overlay")});
     $("#loadingbar").progressbar();
 
     //Hide overlays
-    $("#loadingbar").hide();
-    $("#loadingcircle").hide();
+    $(".loadingindicator").hide();
     $("#overlay").hide();
 
     //Set up buttons
     $("input:button").button();
 
-    $('#controltoggle h3').click(function() {$(this).next().toggle('blind');$(this).toggleClass('ui-corner-bottom'); return false; }).next().hide();
-    $('#controltoggle h3').wrapInner('<a href="#" />');
-    $('#controltoggle h3').prepend('<span></span>');
-    $('#controltoggle h3 span').addClass('ui-icon ui-icon-triangle-1-e');
-    $("#controltoggle").addClass('ui-helper-reset ui-widget');
-    $("#controltoggle h3").addClass('ui-helper-reset ui-widget-header ui-state-default ui-corner-top ui-corner-bottom');
-    $("#controltoggle div").addClass('ui-helper-reset ui-widget-content ui-corner-bottom');
+
+    //Set up controls
+
+  $("#linewidthselector").slider({'min':0.1, 'max': 4, 'step':0.1, 'slide': function(event, ui) {
+    $("#linewidth").val(ui.value);
+    }
+  });
+  $("#nodesizeselector").slider({'min':1, 'max':50, 'slide': function(event, ui) {
+    $("#nodesize").val(ui.value);
+    }
+  });
+
+  $("h3 + div").each(function() {$(this).prev().andSelf().wrapAll("<div class='controlwrapper' />")});
+  $(".controlwrapper").addClass('ui-helper-reset ui-corner-all ui-widget');
+
+  $(".controltoggle").addClass('ui-helper-reset ui-widget');
+  $(".controlwrapper > h3").addClass('ui-helper-reset ui-widget-header ui-state-default ui-state-active');
+  $(".controlwrapper > div").addClass('ui-helper-reset ui-widget-content');
+  $(".controlwrapper > div").css('border','none');
+  $(".controlwrapper > h3").css('border','none');
+
+  $(".controlwrapper > h3").wrapInner("<span class='controlboxittle' />");
+  $(".controlwrapper > h3 > span").prepend("<span class='ui-icon  ui-icon-triangle-1-e ui-icon-triangle-1-s' />");
+
+  $(".controlwrapper > h3").click(function() {
+    $(this).next().toggle({'effect':'blind'});
+    $(this).toggleClass('ui-state-active');
+    $(this).contents().contents().first().toggleClass('ui-icon-triangle-1-s');
+  });
+
+  $("#currentlayout").button()
+    .next()
+    .button({
+      'text':false,
+      'icons': {
+        'primary':'ui-icon-triangle-1-s',
+      }
+    })
+    .parent()
+      .buttonset();
+
+  $("#selectlayout").click(function() {
+    $("#layoutlist").toggle('blind');
+  });
+
+
+  $("#layoutlist").addClass('ui-helper-clear ui-autocomplete ui-menu ui-widget ui-widget-content ui-corner-all');
+  $("#layoutlist li").addClass("ui-helper-clear ui-menu-item ui-corner-all");
+  $("#layoutlist li").hover(function() {$(this).toggleClass('ui-state-hover');});
+  $("#layoutlist").selectable({'stop': function() {
+      $("#currentlayout").text($("#layoutlist .ui-selected").text());
+      $("#layoutlist").toggle('blind');
+    }
+  });
+  
+  $("#layoutlist").show();
+  $("#layoutlist").position({'of':$("#currentlayout"), 'at':'left bottom', 'my':'left top'});
+  $("#layoutlist").width($("#currentlayout").width());
+  $("#layoutlist").hide();
+
+  $(".controlwrapper > h3").each(function() {
+    $(this).next().hide();
+    $(this).toggleClass('ui-state-active');
+    $(this).contents().contents().first().toggleClass('ui-icon-triangle-1-s');
+  });
+
+    //Set up variables
 
     var fadeInDuration = 1500;
     
@@ -46,8 +99,6 @@ window.onload = function() {
     };
     
     var nodeHoverAttr = {
-        //fill: "#ff7373",
-        //stroke: "#ff0000",
         'stroke-width': 5,
     };
     
@@ -57,9 +108,7 @@ window.onload = function() {
     };
     
     var edgeHoverAttr = {
-        //stroke: "#009999",
         'stroke-width': 5,
-        //opacity: 1,
     };
 
     var nameattr = {
@@ -84,7 +133,6 @@ window.onload = function() {
         this.displaybox = null;
         this.addEdge = function(endNode) {
             var e  = new Edge(this, endNode);
-            //this.edges[this.edges.length] = e;
             this.edgesOut[this.edgesOut.length] = e;
             endNode.edgesIn[endNode.edgesIn.length] = e;
             return e;
@@ -159,7 +207,7 @@ window.onload = function() {
             }
         }
         this.highlight = function() {
-            this.circle.toFront();
+            //this.circle.toFront();
             if (this.moving == false) this.drawName();
             this.circle.animate(nodeHoverAttr, 100, '>');
         }
@@ -214,15 +262,19 @@ window.onload = function() {
     }
 
 
+    //Graph object and functions
 
     window.grapher = {};
 
-    grapher.graph = {};  
+    grapher.graph = {};
+
+    grapher.edges = [];
 
     var graph = grapher.graph;  
 
     grapher.add_nodes = function(node_names) {
         //console.log(node_ids);
+        $(".loadingtext").text("Drawing friends...");
         for (id in node_names) {
             graph[id] = new Node(id, node_names[id], Math.floor(Math.random()*(pwidth-20))+10, Math.floor(Math.random()*(pheight-20))+10, 10);
         }
@@ -231,19 +283,22 @@ window.onload = function() {
     }
 
     grapher.set_positions = function(node_positions) {
+        grapher.hideAllEdges();
+        $(".loadingtext").text("Positioning friends...");
         for (id in node_positions) {
             //console.log(graph[id]);
             graph[id].position(node_positions[id][0], node_positions[id][1]);
         }
+        grapher.positionAllEdges();
+        //grapher.revealAllEdges();
         $("#loadingcircle").hide();
         $("#overlay").hide();
     }
 
-    grapher.edges = [];
-
     grapher.add_edges = function(edges) {
         $("#loadingcircle").hide();
-        $("#loadingbar").show();
+        $("#loadingbarwrapper").show();
+        $(".loadingtext").text("Drawing connections...");
         var timeout = 50;
         var chunk_limit = 300;
         var chunk_counter = 0;
@@ -264,7 +319,7 @@ window.onload = function() {
                     }
                 }
                 if (i == edges.length) {
-                    $("#loadingbar").hide();
+                    $("#loadingbarwrapper").hide();
                     $("#loadingcircle").show();
                     grapher.revealAllEdges();
                     $("#loadingcircle").hide();
@@ -272,6 +327,36 @@ window.onload = function() {
                 }
         }
         add();
+    }
+
+    grapher.auto_load = function() {
+        $('#overlay').show();
+        $('#loadingcircle').show();
+        $('.loadingtext').text('Loading friends...');
+        Dajaxice.fbauth.get_friend_ids(Dajax.process, {
+            'auto':true,
+        });
+    }
+
+    grapher.auto_add_nodes = function (node_names) {
+        grapher.add_nodes(node_names);
+        $('#overlay').show();
+        $('#loadingcircle').show();
+        $('.loadingtext').text('Calculating layout...');
+        Dajaxice.fbauth.position_friends(Dajax.process, {
+            'engine': 'sfdp',
+            'width': $('#papercontainer').width(),
+            'height':$('#papercontainer').height(),
+            'auto':true,
+        });
+    }
+
+    grapher.auto_set_positions = function(node_positions) {
+        grapher.set_positions(node_positions);
+        $('#overlay').show();
+        $('#loadingcircle').show();
+        $('.loadingtext').text('Loading connections...');
+        Dajaxice.fbauth.connect_friends(Dajax.process);
     }
 
     grapher.revealAllEdges = function() {
@@ -285,20 +370,11 @@ window.onload = function() {
             grapher.edges[i].hide();
         }
     }
-    
-    var plotGraph = function(layout) {
-        for (name in layout) {
-            graph[name] = new Node(layout[name][0], layout[name][1], 20);
+
+    grapher.positionAllEdges = function() {
+        for (i in grapher.edges) {
+            grapher.edges[i].drawLine();
         }
     }
-    
-    window.plotLinks = function(links) {
-        //var l = new LoadingBar("Loading...");
-        for (var i = 0; i<links.length; i++) {
-            //console.log("Linking "+links[i][0]+" and "+links[i][1]);
-            graph[links[i][0]].addEdge(graph[links[i][1]]);
-        }
-        //l.removeBar();
-    }
-    
-}
+ 
+});

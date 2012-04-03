@@ -7,7 +7,7 @@ import networkx as nx
 
 
 @dajaxice_register
-def get_friend_ids(request):
+def get_friend_ids(request, auto = False):
 	dajax = Dajax()
 	s = request.session
 	user = s['fbuser']
@@ -16,11 +16,14 @@ def get_friend_ids(request):
 	#print json.dumps(graph[0:50])
 	print("Got result")
 	#dajax.alert("hello world")
-	dajax.add_data(names, 'grapher.add_nodes')
+	if (auto):
+		dajax.add_data(names, 'grapher.auto_add_nodes')
+	else:
+		dajax.add_data(names, 'grapher.add_nodes')
 	return dajax.json()
 
 @dajaxice_register
-def position_friends(request, engine, width, height):
+def position_friends(request, engine, width, height, auto = False):
 	print "Positioning friends"
 	ratio = float(width)/float(height)
 	dajax = Dajax()
@@ -54,7 +57,10 @@ def position_friends(request, engine, width, height):
 		y = int((layout[node][1] + y_shift) * y_scale)+10
 		scaled_layout[node] = (x,y)
 	print scaled_layout
-	dajax.add_data(scaled_layout, 'grapher.set_positions')
+	if auto:
+		dajax.add_data(scaled_layout, 'grapher.auto_set_positions')
+	else:
+		dajax.add_data(scaled_layout, 'grapher.set_positions')
 	return dajax.json()
 
 @dajaxice_register

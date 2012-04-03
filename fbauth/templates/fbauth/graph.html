@@ -2,6 +2,7 @@
 
 {% block title %}My Friends{% endblock %}
 {%block head %}
+<script type="text/javascript" src ="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}raphael.js"></script>
 <script src="{{ STATIC_URL }}grapher.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}jquery.showLoading.js"></script>
@@ -29,14 +30,9 @@
   z-index: 5;
 }
 
-#loadingcircle {
-  width: 31px;
-  height: 31px;
-}
-
 #loadingbar {
   opacity: 1;
-  filter: alpha(opacity=100);
+  /*filter: alpha(opacity=100);*/
   width: 200px;
   height: 50px;
 }
@@ -52,6 +48,7 @@ body {
   margin: 0px;
   height: 100%;
   width: 100%;
+  padding: 5px;
 }
 
 #controls {
@@ -67,37 +64,135 @@ body {
   padding: 0px;
 }
 
-#controls input {
-  width: 100%;
+.loadingindicator {
+  width: 200px;
 }
 
+.loadingindicator img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.loadingindicator div {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+.loadingindicator .loadingtext {
+  clear: both;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.sizeselector {
+  height:7px;
+  margin:7px;
+}
+
+.sizeselector .ui-slider-handle {
+  height:15px;
+  width: 15px;
+  outline: none;
+}
+
+.sizeselectorvalue {
+  display: inline-block;
+  width: 3em;
+  border: none;
+}
+
+.controltoggle {
+  font-size: 13;
+}
+
+.controlwrapper {
+  border: 1px solid #aaaaaa;
+}
+
+.controlwrapper h3 .ui-icon {
+  display: inline-block;
+  width: 16px;
+}
+
+.controlwrapper h3 .controlboxtitle {
+  display:inline-block;
+}
+
+.controlbox {
+  padding: 5px;
+}
+
+#currentlayout {
+  width: 150px;
+  height: 2.5em;
+}
+
+#selectlayout {
+  height: 2.5em;
+}
+
+#layoutlist {
+  position: absolute;
+  padding: 1px;
+  margin: 0px;
+  top: 0px;
+  left: 0px;
+  z-index: 5;
+  list-style-type: none;
+}
 
 </style>
+
+
 {% endblock %}
 
 {% block body %}
 <div id = "container">
   <div id="controls">
-    <input type="button" name="Request Friends" value="Request Friends" id="requestfriends" onclick="$('#overlay').show();$('#loadingcircle').show();Dajaxice.fbauth.get_friend_ids(Dajax.process);">
-    <input type="button" name="Position Friends" value = "Position Friends" id = "positionfriends" onclick="$('#overlay').show();$('#loadingcircle').show();Dajaxice.fbauth.position_friends(Dajax.process, {'engine': 'sfdp', 'width': $('#papercontainer').width(), 'height':$('#papercontainer').height()})">
-    <input type="button" name="Connect Friends" value="Connect Friends" id="connectfriends" onclick="$('#overlay').show();$('#loadingcircle').show();Dajaxice.fbauth.connect_friends(Dajax.process);">
+    <input type="button" name="Load" value="Load" id="autoload" onclick="grapher.auto_load();">
+    <div class="controltoggle">
+      <h3>Graph Options</h3>
+      <div class="controlbox">
+        <span class="sizeselectortext">Layout:</span>
+        <div id="layoutselector">
+          <button id="currentlayout">Force-directed</button>
+          <button id="selectlayout">Select a layout</button>
 
+        <ol class="controlwrapper" id="layoutlist">
+          <li>Force-directed</li>
+          <li>Radial</li>
+        </ol>
 
-    <div id ="controltoggle">
-      <h3>Layout</h3>
-        <div>Content 1</div>
+        </div>
+
+        <span class="sizeselectortext">Edge width:</span><input class="sizeselectorvalue" type="text" id="linewidth" disabled />
+        <div class="sizeselector" id="linewidthselector"></div>
+        <span class="sizeselectortext">Node radius:</span><input class="sizeselectorvalue" type="text" id="nodesize" disabled />
+        <div class="sizeselector" id="nodesizeselector"></div>
+      </div>
       <h3>Weights</h3>
-        <div>Content 2</div>
+      <div class="controlbox">
+        Content 2
+      </div>
       <h3>Selection</h3>
-        <div>Content 3</div>
+      <div class="controlbox">
+            <input type="button" name="Request Friends" value="Request Friends" id="requestfriends" onclick="$('#overlay').show();$('#loadingcircle').show();$('.loadingtext').text('Loading friends...');Dajaxice.fbauth.get_friend_ids(Dajax.process);">
+    <input type="button" name="Position Friends" value = "Position Friends" id = "positionfriends" onclick="$('#overlay').show();$('#loadingcircle').show();$('.loadingtext').text('Calculating layout...');Dajaxice.fbauth.position_friends(Dajax.process, {'engine': 'sfdp', 'width': $('#papercontainer').width(), 'height':$('#papercontainer').height()})">
+    <input type="button" name="Connect Friends" value="Connect Friends" id="connectfriends" onclick="$('#overlay').show();$('#loadingcircle').show();$('.loadingtext').text('Loading connections...');Dajaxice.fbauth.connect_friends(Dajax.process);">
+      </div>
     </div>
+
   </div>
   <div id="papercontainer">
   </div>
 </div>
 
 <div id="overlay">
-  <div id="loadingcircle"><img src="{{ STATIC_URL}}images/loading.gif" /></div>
-  <div id="loadingbar"></div>
+  <div class="loadingindicator" id="loadingcircle"><img src="{{ STATIC_URL}}images/loading.gif" /><div class="loadingtext">Loading</div></div>
+  <div class="loadingindicator" id="loadingbarwrapper"><div id="loadingbar"></div><div class="loadingtext">Loading</div></div>
 </div>
 {% endblock %}
