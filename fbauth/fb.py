@@ -183,16 +183,12 @@ class Fbuser:
 
 		print "Going to examine %d friends" % len(friends)
 		for p1 in friends:
-			print "examining friend %s" % str(p1)
-			if p1.name == "Kate Benedict":
-				print "what....??"
 			if p1.id == self.id:
 				continue
 			else:
-				for p2 in p1.friends.all():
-					if (p1.name=="Kate Benedict" or p2.name == "Kate Benedict"):
-						print "Link: %s, %s" %(p1.name, p2.name)
-					if p2.id == self.id or p2 not in friends:
+				#for p2 in p1.friends.all():
+				for p2 in p1.friends.filter(id__in=friends):
+					if p2.id == self.id:
 						continue
 					elif not seen_link([p1.id, p2.id]):
 						links.append([p1.id, p2.id])
