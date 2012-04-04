@@ -3,11 +3,18 @@
 {% block title %}My Friends{% endblock %}
 {%block head %}
 <script type="text/javascript" src ="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+  window.static_url="{{ STATIC_URL }}";
+})
+</script>
 <script type="text/javascript" src="{{ STATIC_URL }}raphael.js"></script>
 <script src="{{ STATIC_URL }}grapher.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}jquery.showLoading.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}jquery-ui.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}jquery.colourPicker.js"></script>
 <link type="text/css" href="{{ STATIC_URL }}custom-theme/jquery-ui-1.8.18.custom.css" rel="stylesheet" />
+<link type="text/css" href="{{ STATIC_URL }}jquery.colourPicker.css" rel="stylesheet" />
 <style type="text/css">
 .loading-indicator {
   height: 80px;
@@ -151,12 +158,12 @@ body {
 </style>
 
 
+
 {% endblock %}
 
 {% block body %}
 <div id = "container">
   <div id="controls">
-    <input type="button" name="Load" value="Load" id="autoload" onclick="grapher.auto_load();">
     <div class="controltoggle">
       <h3>Graph Options</h3>
       <div class="controlbox">
@@ -174,14 +181,17 @@ body {
 
         <span class="sizeselectortext">Edge width:</span><input class="sizeselectorvalue" type="text" id="linewidth" disabled />
         <div class="sizeselector" id="linewidthselector"></div>
+        <div>Edge color: <select class="colorselector" name="edgecolor"></select></div>
         <span class="sizeselectortext">Node radius:</span><input class="sizeselectorvalue" type="text" id="nodesize" disabled />
         <div class="sizeselector" id="nodesizeselector"></div>
+        <div>Node color:<select class="colorselector" name="nodecolor"></select></div>
+        <input type="button" name="Load" value="Load graph" id="autoload" onclick="grapher.auto_load();">
       </div>
-      <h3>Weights</h3>
+      <h3>Analysis</h3>
       <div class="controlbox">
-        Content 2
+        To be implemented
       </div>
-      <h3>Selection</h3>
+      <h3>Dev Stuff</h3>
       <div class="controlbox">
             <input type="button" name="Request Friends" value="Request Friends" id="requestfriends" onclick="$('#overlay').show();$('#loadingcircle').show();$('.loadingtext').text('Loading friends...');Dajaxice.fbauth.get_friend_ids(Dajax.process);">
     <input type="button" name="Position Friends" value = "Position Friends" id = "positionfriends" onclick="$('#overlay').show();$('#loadingcircle').show();$('.loadingtext').text('Calculating layout...');Dajaxice.fbauth.position_friends(Dajax.process, {'engine': 'sfdp', 'width': $('#papercontainer').width(), 'height':$('#papercontainer').height()})">

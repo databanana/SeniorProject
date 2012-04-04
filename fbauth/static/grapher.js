@@ -11,7 +11,7 @@ $(document).ready(function() {
     
     var nodeAttr = {
         fill: "#ff7373",
-        stroke: "#ff4040",
+        stroke: "#000000",
         'stroke-width': 3,
         'r': 10,
     };
@@ -117,16 +117,25 @@ $(document).ready(function() {
   $("#layoutlist li").addClass("ui-helper-clear ui-menu-item ui-corner-all");
   $("#layoutlist li").hover(function() {$(this).toggleClass('ui-state-hover');});
   $("#layoutlist").selectable({'stop': function() {
+      if (grapher.loadedNodes) {
+        $("#overlay").show();
+        $("#loadingcircle").show();
+        $(".loadingtext").text("Loading friend positions...");
+      }
       var selection = $("#layoutlist .ui-selected").text();
       $("#currentlayout").text(selection);
       $("#layoutlist").toggle('blind');
       if (selection=="Radial") {
+        grapher.engine = "twopi";
+        if (!grapher.loadedNodes) return;
         Dajaxice.fbauth.position_friends(Dajax.process, {
             'engine': 'twopi',
             'width': $('#papercontainer').width(),
             'height':$('#papercontainer').height(),
         });
       } else if (selection=="Force-directed") {
+        grapher.engine = "sfdp";
+        if (!grapher.loadedNodes) return;
         Dajaxice.fbauth.position_friends(Dajax.process, {
             'engine': 'sfdp',
             'width': $('#papercontainer').width(),
@@ -135,7 +144,36 @@ $(document).ready(function() {
       }
     }
   });
-  
+
+  //Color selectors
+  var colorparts = ['00','55','AA','FF'];
+  for (var i in colorparts) {
+    for (var j in colorparts) {
+        for (var k in colorparts) {
+            var c = colorparts[i] + colorparts[j] + colorparts[k];
+            $(".colorselector").append("<option value='"+c+"'>#" + c + "</option>");
+        }
+    }
+  }
+
+  $(".colorselector").colourPicker({'ico':window.static_url+'jquery.colourPicker.gif', 'title':false});
+
+  $("[name='nodecolor']").val(nodeAttr['fill'].substring(1)).css('background', nodeAttr['fill']);
+  $("[name='edgecolor']").val(edgeAttr['stroke'].substring(1)).css('background', edgeAttr['stroke']);
+
+
+  $("[name='nodecolor']").change(function() {
+    nodeAttr['fill'] = '#' + $("[name='nodecolor']").val();
+    grapher.updateAllNodeAttr();
+  });
+  $("[name='edgecolor']").change(function() {
+    edgeAttr['stroke'] = '#' + $("[name='edgecolor']").val();
+    grapher.updateAllEdgeAttr();
+  });
+
+
+
+  //Position and hide elements
   $("#layoutlist").show();
   $("#layoutlist").position({'of':$("#currentlayout"), 'at':'left bottom', 'my':'left top'});
   $("#layoutlist").width($("#currentlayout").width());
@@ -146,6 +184,11 @@ $(document).ready(function() {
     $(this).toggleClass('ui-state-active');
     $(this).contents().contents().first().toggleClass('ui-icon-triangle-1-s');
   });
+
+  //Open first control box
+  var firstbox = $(".controlwrapper > h3").first();
+  firstbox.toggleClass('ui-state-active').contents().contents().first().toggleClass('ui-icon-triangle-1-s');
+  firstbox.next().show();
 
     //Set up graph objects
 
@@ -306,9 +349,12 @@ $(document).ready(function() {
 
     grapher.edges = [];
 
+    grapher.engine = "sfdp";
+
     var graph = grapher.graph;  
 
     grapher.add_nodes = function(node_names) {
+        grapher.loadedNodes = true;
         //console.log(node_ids);
         $(".loadingtext").text("Drawing friends...");
         for (id in node_names) {
@@ -320,6 +366,8 @@ $(document).ready(function() {
 
     grapher.set_positions = function(node_positions) {
         grapher.hideAllEdges();
+        $("#overlay").show();
+        $("#loadingcircle").show();
         $(".loadingtext").text("Positioning friends...");
         for (id in node_positions) {
             //console.log(graph[id]);
@@ -333,6 +381,7 @@ $(document).ready(function() {
     }
 
     grapher.add_edges = function(edges) {
+        grapher.loadedEdges = true;
         $("#loadingcircle").hide();
         $("#loadingbarwrapper").show();
         $(".loadingtext").text("Drawing connections...");
@@ -371,9 +420,27 @@ $(document).ready(function() {
         $('#overlay').show();
         $('#loadingcircle').show();
         $('.loadingtext').text('Loading friends...');
-        Dajaxice.fbauth.get_friend_ids(Dajax.process, {
-            'auto':true,
-        });
+        if (!grapher.loadedNodes) {
+            //Load nodes, then continue
+            Dajaxice.fbauth.get_friend_ids(Dajax.process, {
+                'auto':true,
+            });
+        } else if(!grapher.loadedEdges) {
+            //Position friends, then continue
+            Dajaxice.fbauth.position_friends(Dajax.process, {
+                'engine': grapher.engine,
+                'width': $('#papercontainer').width(),
+                'height':$('#papercontainer').height(),
+                'auto':true,
+            });
+        } else {
+            //Just position friends
+            Dajaxice.fbauth.position_friends(Dajax.process, {
+                'engine': grapher.engine,
+                'width': $('#papercontainer').width(),
+                'height':$('#papercontainer').height(),
+            }); 
+        }
     }
 
     grapher.auto_add_nodes = function (node_names) {
@@ -382,7 +449,7 @@ $(document).ready(function() {
         $('#loadingcircle').show();
         $('.loadingtext').text('Calculating layout...');
         Dajaxice.fbauth.position_friends(Dajax.process, {
-            'engine': 'sfdp',
+            'engine': grapher.engine,
             'width': $('#papercontainer').width(),
             'height':$('#papercontainer').height(),
             'auto':true,
@@ -424,6 +491,12 @@ $(document).ready(function() {
     grapher.updateAllEdgeAttr = function () {
         for (i in grapher.edges) {
             grapher.edges[i].line.attr(edgeAttr);
+        }
+    }
+
+    grapher.updateAllNodeAttr = function() {
+        for (i in grapher.graph) {
+            grapher.graph[i].circle.attr(nodeAttr);
         }
     }
 
