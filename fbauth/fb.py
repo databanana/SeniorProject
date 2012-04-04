@@ -73,7 +73,10 @@ class Fbuser:
 		except Person.DoesNotExist:
 			return False
 		else:
-			return (datetime.date.today()-me.last_updated) < td
+			if me.last_updated == None:
+				return False
+			else:
+				return (datetime.date.today()-me.last_updated) < td
 
 
 	def create_friends(self):
@@ -82,19 +85,22 @@ class Fbuser:
 			me = Person.objects.get(id=self.id)
 		except Person.DoesNotExist:
 			me = Person.objects.create(id = self.id, name = self.name)
+		me.last_updated = datetime.date.today()
+		me.save()
 
 		for friend in friends:
 			friendlookup = Person.objects.filter(id=friend['id'])
 			if len(friendlookup) == 0:
 				p = Person.objects.create(name = friend['name'], id = friend['id'])
 				p.save()
+			else:
+				p = friendlookup[0]
+			if (p not in me.friends.all()):
 				forwardconnection = Connection.objects.create(from_person_id=self.id, to_person_id = friend['id'])
 				reverseconnection = Connection.objects.create(to_person_id=self.id, from_person_id = friend['id'])
 				forwardconnection.save()
 				reverseconnection.save()
-			else:
-				me.friends.add(friendlookup[0])
-		me.save()
+
 
 	def connect_friends(self):
 		print "Connecting friends"
