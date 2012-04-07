@@ -7,6 +7,7 @@ class Person(models.Model):
 	name = models.CharField(max_length=255)
 	friends = models.ManyToManyField('self', through='Connection', symmetrical=False)
 	last_updated = models.DateField(null=True)
+	connections_ready = models.BooleanField(default=False)
 
 	def __unicode__(self):
 		return self.name

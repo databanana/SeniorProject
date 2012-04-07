@@ -149,7 +149,8 @@ class Fbuser:
 		#p1.save()
 		#print "Saved friends for %s" % p1.name
 		print "Finished creating models"
-
+		me = Person.objects.get(id=self.id)
+		me.connections_ready = True
 
 	def get_friends_graph(self):
 		print "Started printing friends graph"
