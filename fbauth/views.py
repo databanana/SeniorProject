@@ -7,6 +7,7 @@ from fb import Fbuser
 from django.template import RequestContext
 from threading import Thread
 from fbauth.models import Person
+from django.conf import settings
 
 
 
@@ -17,8 +18,8 @@ def index(request):
 def login(request):
 	print "In login view"
 	print request.session
-	app_id = "156643857790426"
-	app_secret = open('appsecret','r').read()
+	app_id = settings.APP_ID
+	app_secret = settings.APP_SECRET
 	redirect_url = "http://"+request.get_host() + reverse('fbauth.views.login')
 	#print redirect_url
 	#redirect_url = 'http://localhost:8000/fbauth/login'

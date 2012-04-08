@@ -1,4 +1,6 @@
 # Django settings for mysite project.
+APP_ID = "156643857790426"
+APP_SECRET = open('appsecret','r').read()
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
