@@ -13,7 +13,7 @@ from django.conf import settings
 
 def index(request):
 	#print reverse('fbauth.views.login')
-	return render_to_response('fbauth/index.html', {'app_id': '156643857790426', 'redirect_url': 'http://localhost:8000/fbauth/login' }, context_instance=RequestContext(request))
+	return render_to_response('fbauth/index.html', {'app_id': settings.APP_ID, 'redirect_url': "http://"+request.get_host() + reverse('fbauth.views.login') }, context_instance=RequestContext(request))
 
 def login(request):
 	print "In login view"
