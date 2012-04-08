@@ -510,5 +510,20 @@ $(document).ready(function() {
             grapher.graph[i].circle.attr(nodeAttr);
         }
     }
+
+    grapher.waitToPosition = function(args) {
+        var djangoargs = {
+            'engine': grapher.engine,
+            'width': $('#papercontainer').width(),
+            'height':$('#papercontainer').height(),
+        };
+        if (args['auto']) {
+            djangoargs['auto'] = true;
+        }
+
+        setTimeout(function() {
+            Dajaxice.fbauth.position_friends(Dajax.process, djangoargs);
+        }, args['time']);
+    }
  
 });

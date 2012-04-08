@@ -56,6 +56,7 @@ def grapher(request):
 		u.create_friends()
 		me = Person.objects.get(id=u.id)
 		me.connections_ready = False;
+		print "connections_read = " + str(me.connections_ready)
 		me.save()
 		connection_processor = Thread(target=u.connect_friends)
 		connection_processor.start()

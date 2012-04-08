@@ -31,6 +31,12 @@ def position_friends(request, engine, width, height, auto = False):
 	user = s['fbuser']
 	print "Got fbuser object"
 	p = Person.objects.get(id = user.id)
+	print "AJAX checking if connections_ready = " +str(p.connections_ready)
+	#Check if the connections are ready to be returned; if not tell client to wait 5s
+	if (not p.connections_ready):
+		print "Connections not ready"
+		dajax.add_data({'time':3000, 'auto':auto}, 'grapher.waitToPosition')
+		return dajax.json()
 	nodes = user.get_friend_ids()
 	print "Got nodes"
 	links = user.get_friends_links()

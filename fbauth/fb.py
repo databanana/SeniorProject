@@ -151,6 +151,8 @@ class Fbuser:
 		print "Finished creating models"
 		me = Person.objects.get(id=self.id)
 		me.connections_ready = True
+		me.save()
+		print "connections_ready = " + str(me.connections_ready)
 
 	def get_friends_graph(self):
 		print "Started printing friends graph"
