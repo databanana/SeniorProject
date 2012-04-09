@@ -118,20 +118,28 @@ class Fbuser:
 		#INSERT OR IGNORE INTO "fbauth_person_friends" ("from_person_id", "to_person_id") VALUES (p1, p2)
 		#...
 		#COMMIT;
-
-		#insertstr = "INSERT OR IGNORE INTO \"fbauth_person_friends\" (\"from_person_id\", \"to_person_id\") VALUES "
-		#''.join([insertstr+"("+r['uid1'] + "," + r['uid2'] + ");" + insertstr + "("+r['uid2']+","+r['uid1']+");" for r in mf])
+		mf = self.get_mutual_friends()
+		i = 0
+		while (i < len(mf)):
+			insertstr = "INSERT IGNORE INTO fbauth_connection (from_person_id, to_person_id) VALUES "
+			if (i+500 < len(mf)):
+				valuestr = ''.join(["(\""+r['uid1'] + "\",\"" + r['uid2'] + "\")," + "(\""+r['uid2']+"\",\""+r['uid1']+"\")," for r in mf[i:i+500]])
+			else:
+				valuestr = ''.join(["(\""+r['uid1'] + "\",\"" + r['uid2'] + "\")," + "(\""+r['uid2']+"\",\""+r['uid1']+"\")," for r in mf[i:]])
+			insertstr = insertstr+valuestr[:-1]+";"
+			cursor.execute(insertstr)
+			transaction.commit_unless_managed()
+			i += 500
 
 		#SQLite:
-		mf = self.get_mutual_friends()
-		insertstr = "INSERT OR IGNORE INTO fbauth_connection (from_person_id, to_person_id) VALUES"
-		#values = ''.join([insertstr+"("+r['uid1'] + "," + r['uid2'] + ");" + insertstr + "("+r['uid2']+","+r['uid1']+");" for r in mf])
+		#mf = self.get_mutual_friends()
+		#insertstr = "INSERT OR IGNORE INTO fbauth_connection (from_person_id, to_person_id) VALUES"
 
-		cursor.execute("BEGIN TRANSACTION")
-		for r in mf:
-			cursor.execute(insertstr+" (%s,%s)", params=[str(r['uid1']), str(r['uid2'])])
-			cursor.execute(insertstr+" (%s,%s)", params=[str(r['uid2']), str(r['uid1'])])
-		transaction.commit_unless_managed()
+		#cursor.execute("BEGIN TRANSACTION")
+		#for r in mf:
+		#	cursor.execute(insertstr+" (%s,%s)", params=[str(r['uid1']), str(r['uid2'])])
+		#	cursor.execute(insertstr+" (%s,%s)", params=[str(r['uid2']), str(r['uid1'])])
+		#transaction.commit_unless_managed()
 
 
 		#SLOWWWW version:
@@ -189,7 +197,7 @@ class Fbuser:
 			return self.links
 		else:
 			user = Person.objects.get(id=self.id)
-			friends = user.friends.all()
+			friends = list(user.friends.values_list('pk', flat=True))
 			#Try this out
 			seen = set()
 			seen_link = lambda l: (tuple(l) in seen) or ((l[1], l[0]) in seen)
