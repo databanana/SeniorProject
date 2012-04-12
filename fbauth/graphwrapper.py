@@ -188,7 +188,7 @@ class GraphWrapper:
 			result=[0,(1-p)/float(1)/3, (p)/float(1)/3]
 		else:
 			p = p-float(2)/3
-			result = [0, (p)/float(1)/3, (1-p)/float(1)/3]
+			result = [(p)/float(1)/3, 0, (1-p)/float(1)/3]
 		print result
 		sqsum = sum([v**2 for v in result])
 		sqfactor = float(255**2)/sqsum

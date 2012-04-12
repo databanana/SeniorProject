@@ -78,6 +78,16 @@ $(document).ready(function() {
     }
   });
 
+  $("#communitylevelselector").slider({'min':0.0,
+    'max': 1.0,
+    'step':0.01,
+    'value': 0,
+    'stop':function(event, ui) {
+        grapher.findCommunities(ui.value);
+    },
+  });
+
+
   $("#nodesize").val(nodeAttr['r']);
 
   $("h3 + div").each(function() {$(this).prev().andSelf().wrapAll("<div class='controlwrapper' />")});
@@ -534,6 +544,13 @@ $(document).ready(function() {
         }, args['time']);
     }
 
+    grapher.findCommunities = function(percentage) {
+        $('#overlay').show();
+        $('#loadingcircle').show();
+        $('.loadingtext').text('Finding communities...');
+        Dajaxice.fbauth.find_groups(Dajax.process,{n:percentage});
+    }
+
     grapher.colorGroups = function(colors) {
         console.log(colors);
         $.each(colors, function(index, value) {
@@ -543,6 +560,8 @@ $(document).ready(function() {
                 grapher.graph[nodes[i]].circle.attr('fill', color);
             }
         });
+        $("#overlay").hide();
+        $("#loadingcircle").hide();
     }
  
 });

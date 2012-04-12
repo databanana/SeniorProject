@@ -91,7 +91,8 @@ def find_groups(request, n):
 	G_wrapper = GraphWrapper(user.get_friend_ids(), user.get_friends_links())
 	#Why does storing this in the session not work...?
 	dendogram = community.generate_dendogram(G_wrapper.G)
-	level = int(float(n)/100 * (len(dendogram)-1))
+	level = int(n * (len(dendogram)-1))
+	print "Level: %s" % level
 	result =community.partition_at_level(dendogram, level)
 	groupmap = {}
 	for entry in result.iteritems():
@@ -103,5 +104,6 @@ def find_groups(request, n):
 			groupmap[entry[1]] = [entry[0]]
 	colors = G_wrapper.get_colorscheme(len(groupmap))
 	response=zip(colors, groupmap.values())
+	dajax.alert("Level: %s" % level)
 	dajax.add_data(response, 'grapher.colorGroups')
 	return dajax.json()
