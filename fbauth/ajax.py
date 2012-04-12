@@ -5,6 +5,7 @@ from collections import deque
 from fbauth.models import Person
 import networkx as nx
 from graphwrapper import GraphWrapper
+from fbauth import community
 
 
 @dajaxice_register
@@ -83,12 +84,24 @@ def connect_friends(request):
 	return dajax.json()
 
 @dajaxice_register
-def find_groups(request, numgroups):
+def find_groups(request, n):
 	dajax = Dajax()
 	s = request.session
 	user = s['fbuser']
 	G_wrapper = GraphWrapper(user.get_friend_ids(), user.get_friends_links())
-	response = []
-	response = G_wrapper.find_groups_external(1)
+	#Why does storing this in the session not work...?
+	dendogram = community.generate_dendogram(G_wrapper.G)
+	level = int(float(n)/100 * (len(dendogram)-1))
+	result =community.partition_at_level(dendogram, level)
+	groupmap = {}
+	for entry in result.iteritems():
+		#print entry
+		#print groupmap
+		if entry[1] in groupmap:
+			groupmap[entry[1]].append(entry[0])
+		else:
+			groupmap[entry[1]] = [entry[0]]
+	colors = G_wrapper.get_colorscheme(len(groupmap))
+	response=zip(colors, groupmap.values())
 	dajax.add_data(response, 'grapher.colorGroups')
 	return dajax.json()
