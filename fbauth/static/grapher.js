@@ -10,11 +10,12 @@ $(document).ready(function() {
     var fadeInDuration = 1500;
     
     var nodeAttr = {
-        fill: "#ff7373",
         stroke: "#000000",
         'stroke-width': 3,
         'r': 10,
     };
+
+    var nodeColor = "#ff7373";
     
     var nodeHoverAttr = {
         'stroke-width': 5,
@@ -158,13 +159,13 @@ $(document).ready(function() {
 
   $(".colorselector").colourPicker({'ico':window.static_url+'jquery.colourPicker.gif', 'title':false});
 
-  $("[name='nodecolor']").val(nodeAttr['fill'].substring(1)).css('background', nodeAttr['fill']);
+  $("[name='nodecolor']").val(nodeColor.substring(1)).css('background', nodeColor);
   $("[name='edgecolor']").val(edgeAttr['stroke'].substring(1)).css('background', edgeAttr['stroke']);
 
 
   $("[name='nodecolor']").change(function() {
-    nodeAttr['fill'] = '#' + $("[name='nodecolor']").val();
-    grapher.updateAllNodeAttr();
+    nodeColor = '#' + $("[name='nodecolor']").val();
+    grapher.updateAllNodeColors();
   });
   $("[name='edgecolor']").change(function() {
     edgeAttr['stroke'] = '#' + $("[name='edgecolor']").val();
@@ -216,6 +217,7 @@ $(document).ready(function() {
         this.circle = paper.circle(this.x, this.y, this.r);
         this.circle.attr('opacity', 0);
         this.circle.attr(nodeAttr);
+        this.circle.attr('fill', nodeColor);
         this.circle.animate({'opacity':1}, fadeInDuration, '>');
         this.move = function(dx, dy) {
             this.dx = dx;
@@ -497,6 +499,12 @@ $(document).ready(function() {
     grapher.updateAllNodeAttr = function() {
         for (i in grapher.graph) {
             grapher.graph[i].circle.attr(nodeAttr);
+        }
+    }
+
+    grapher.updateAllNodeColors = function() {
+        for (i in grapher.graph) {
+            grapher.graph[i].circle.attr('fill', nodeColor);
         }
     }
 
