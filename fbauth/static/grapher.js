@@ -525,5 +525,16 @@ $(document).ready(function() {
             Dajaxice.fbauth.position_friends(Dajax.process, djangoargs);
         }, args['time']);
     }
+
+    grapher.colorGroups = function(colors) {
+        console.log(colors);
+        $.each(colors, function(index, value) {
+            var color = value[0];
+            var nodes = value[1];
+            for (var i = 0; i < nodes.length; i++) {
+                grapher.graph[nodes[i]].circle.attr('fill', color);
+            }
+        });
+    }
  
 });

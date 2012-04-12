@@ -4,6 +4,7 @@ import json
 from collections import deque
 from fbauth.models import Person
 import networkx as nx
+from graphwrapper import GraphWrapper
 
 
 @dajaxice_register
@@ -42,9 +43,11 @@ def position_friends(request, engine, width, height, auto = False):
 	links = user.get_friends_links()
 	print "Got links"
 	#print links
-	G = nx.Graph()
-	G.add_nodes_from(nodes)
-	G.add_edges_from(links)
+	G_wrapper = GraphWrapper(nodes, links)
+	#This doesn't work--something to do with pickling files?
+	#request.session['graphwrapper'] = G_wrapper
+	#request.session['nxgraph'] = G_wrapper.G
+	G = G_wrapper.G
 	print "Producing layout"
 	layout=nx.graphviz_layout(G, prog=engine, args="-Gratio=%f" % ratio)
 	x_coords = [p[0] for p in layout.values()]
@@ -77,4 +80,15 @@ def connect_friends(request):
 	user = s['fbuser']
 	edges = user.get_friends_links()
 	dajax.add_data(edges, 'grapher.add_edges')
+	return dajax.json()
+
+@dajaxice_register
+def find_groups(request, numgroups):
+	dajax = Dajax()
+	s = request.session
+	user = s['fbuser']
+	G_wrapper = GraphWrapper(user.get_friend_ids(), user.get_friends_links())
+	response = []
+	response = G_wrapper.find_groups_external(1)
+	dajax.add_data(response, 'grapher.colorGroups')
 	return dajax.json()
