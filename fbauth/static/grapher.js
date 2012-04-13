@@ -12,15 +12,17 @@ $(document).ready(function() {
     var nodeAttr = {
         stroke: "#000000",
         'stroke-width': 3,
-        'r': 10,
+        //'r': 10,
     };
 
     var nodeColor = "#ff7373";
     
     var nodeHoverAttr = {
         'stroke-width': 5,
-        'r': 10,
+        //'r': 10,
     };
+
+    nodeRadius = 10;
     
     var edgeAttr = {
         stroke: "#33CCCC",
@@ -70,7 +72,7 @@ $(document).ready(function() {
 
   $("#linewidth").val(edgeAttr['stroke-width']);
 
-  $("#nodesizeselector").slider({'min':1, 'max':50, 'value':nodeAttr['r'], slide: function(event, ui) {
+  $("#nodesizeselector").slider({'min':1, 'max':50, 'value':nodeRadius, slide: function(event, ui) {
         $("#nodesize").val(ui.value);
     },
     'stop': function(event, ui) {
@@ -218,6 +220,7 @@ $(document).ready(function() {
         this.mouseover = false;
         this.displaytext = null;
         this.displaybox = null;
+        this.rankVal = null;
         this.addEdge = function(endNode) {
             var e  = new Edge(this, endNode);
             this.edgesOut[this.edgesOut.length] = e;
@@ -227,6 +230,7 @@ $(document).ready(function() {
         this.circle = paper.circle(this.x, this.y, this.r);
         this.circle.attr('opacity', 0);
         this.circle.attr(nodeAttr);
+        this.circle.attr('r', nodeRadius);
         this.circle.attr('fill', nodeColor);
         this.circle.animate({'opacity':1}, fadeInDuration, '>');
         this.move = function(dx, dy) {
@@ -297,11 +301,11 @@ $(document).ready(function() {
         this.highlight = function() {
             //this.circle.toFront();
             if (this.moving == false) this.drawName();
-            this.circle.animate(nodeHoverAttr, 100, '>');
+            this.circle.animate({'stroke-width':this.circle.attr('stroke-width') * 1.5}, 100, '>');
         }
         this.unhighlight = function() {
             this.hideName();
-            this.circle.animate(nodeAttr, 100, '>');
+            this.circle.animate({'stroke-width':this.circle.attr('stroke-width')/1.5}, 100, '>');
         }
         this.drawName = function () {
             if (this.displaytext != null) this.displaytext.remove();
@@ -519,13 +523,12 @@ $(document).ready(function() {
     }
 
     grapher.setCircleRadius = function(r) {
-        nodeAttr['stroke-width'] = r/6;
-        nodeAttr['r'] = r;
-        nodeHoverAttr['stroke-width'] = r*1.5/6;
-        nodeHoverAttr['r'] = r;
+        nodeStrokeWidth = r/6;
+        nodeRadius = r;
+        //nodeHoverAttr['stroke-width'] = r*1.5/6;
         console.log("Set stroke width to " + (r/6));
         for (i in grapher.graph) {
-            grapher.graph[i].circle.attr(nodeAttr);
+            grapher.graph[i].circle.attr({'stroke-width':nodeStrokeWidth, 'r':nodeRadius});
         }
     }
 
@@ -562,6 +565,12 @@ $(document).ready(function() {
         });
         $("#overlay").hide();
         $("#loadingcircle").hide();
+    }
+
+    grapher.resizeNodes = function(ranks) {
+        $.each(ranks, function(node,radius) {
+            grapher.graph[node].circle.attr({'r':radius, 'stroke-width':radius/6});
+        });
     }
  
 });

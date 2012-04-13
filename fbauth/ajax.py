@@ -6,6 +6,7 @@ from fbauth.models import Person
 import networkx as nx
 from graphwrapper import GraphWrapper
 from fbauth import community
+import numpy as np
 
 
 @dajaxice_register
@@ -104,6 +105,26 @@ def find_groups(request, n):
 			groupmap[entry[1]] = [entry[0]]
 	colors = G_wrapper.get_colorscheme(len(groupmap))
 	response=zip(colors, groupmap.values())
-	dajax.alert("Level: %s" % level)
+	#dajax.alert("Level: %s" % level)
 	dajax.add_data(response, 'grapher.colorGroups')
+	return dajax.json()
+
+@dajaxice_register
+def get_pagerank(request, min_radius, max_radius):
+	dajax=Dajax()
+	user = request.session['fbuser']
+	G_wrapper = GraphWrapper(user.get_friend_ids(), user.get_friends_links())
+	pr = nx.pagerank_numpy(G_wrapper.G)
+	min_pr = min(pr.values())
+	max_pr = max(pr.values())
+	min_area = np.pi*min_radius**2
+	max_area = np.pi*max_radius**2
+	area_change = max_area-min_area
+	pr_change = max_pr-min_pr
+	node_radii = {}
+	for node, rank in pr.iteritems():
+		area = (rank-min_pr)/pr_change * area_change + min_area
+		radius = (area/np.pi)**0.5
+		node_radii[node] = radius
+	dajax.add_data(node_radii, 'grapher.resizeNodes')
 	return dajax.json()
