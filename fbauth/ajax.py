@@ -113,8 +113,12 @@ def find_groups(request, n):
 def get_pagerank(request, min_radius, max_radius):
 	dajax=Dajax()
 	user = request.session['fbuser']
-	G_wrapper = GraphWrapper(user.get_friend_ids(), user.get_friends_links())
-	pr = nx.pagerank_numpy(G_wrapper.G)
+	if 'pagerank' in request.session:
+		pr = request.session['pagerank']
+	else:
+		G_wrapper = GraphWrapper(user.get_friend_ids(), user.get_friends_links())
+		pr = nx.pagerank_numpy(G_wrapper.G)
+		request.session['pagerank'] = pr
 	min_pr = min(pr.values())
 	max_pr = max(pr.values())
 	min_area = np.pi*min_radius**2
@@ -127,4 +131,7 @@ def get_pagerank(request, min_radius, max_radius):
 		radius = (area/np.pi)**0.5
 		node_radii[node] = radius
 	dajax.add_data(node_radii, 'grapher.resizeNodes')
-	return dajax.json()
+	print "Forming json"
+	result = dajax.json()
+	print "Almost there!"
+	return result

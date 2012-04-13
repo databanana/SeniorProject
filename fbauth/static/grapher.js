@@ -89,8 +89,20 @@ $(document).ready(function() {
     },
   });
 
+  $("#sizerangeselector").slider({
+    'range': true,
+    'min':1,
+    'max': 50,
+    'step': 1,
+    'values': [nodeRadius, nodeRadius],
+    'stop':function(event, ui) {
+        Dajaxice.fbauth.get_pagerank(Dajax.process,{min_radius:ui.values[0], max_radius:ui.values[1]})
+    },
+  });
 
-  $("#nodesize").val(nodeAttr['r']);
+
+
+  $("#nodesize").val(nodeRadius);
 
   $("h3 + div").each(function() {$(this).prev().andSelf().wrapAll("<div class='controlwrapper' />")});
   $(".controlwrapper").addClass('ui-helper-reset ui-corner-all ui-widget');
@@ -301,11 +313,11 @@ $(document).ready(function() {
         this.highlight = function() {
             //this.circle.toFront();
             if (this.moving == false) this.drawName();
-            this.circle.animate({'stroke-width':this.circle.attr('stroke-width') * 1.5}, 100, '>');
+            this.circle.animate({'stroke-width':this.circle.attr('r') * 1.5/6}, 100, '>');
         }
         this.unhighlight = function() {
             this.hideName();
-            this.circle.animate({'stroke-width':this.circle.attr('stroke-width')/1.5}, 100, '>');
+            this.circle.animate({'stroke-width':this.circle.attr('r')/6}, 100, '>');
         }
         this.drawName = function () {
             if (this.displaytext != null) this.displaytext.remove();
