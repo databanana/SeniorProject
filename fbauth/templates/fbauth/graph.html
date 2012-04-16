@@ -136,16 +136,16 @@ body {
   padding: 5px;
 }
 
-#currentlayout {
+.dropdownselected {
   width: 150px;
   height: 2.5em;
 }
 
-#selectlayout {
+.dropdownbutton {
   height: 2.5em;
 }
 
-#layoutlist {
+.dropdownlist {
   position: absolute;
   padding: 1px;
   margin: 0px;
@@ -169,10 +169,10 @@ body {
       <div class="controlbox">
         <span class="sizeselectortext">Layout:</span>
         <div id="layoutselector">
-          <button id="currentlayout">Force-directed</button>
-          <button id="selectlayout">Select a layout</button>
+          <button class="dropdownselected" id="currentlayout">Force-directed</button>
+          <button class="dropdownbutton" id="selectlayout">Select a layout</button>
 
-        <ol class="controlwrapper" id="layoutlist">
+        <ol class="controlwrapper dropdownlist" id="layoutlist">
           <li>Force-directed</li>
           <li>Radial</li>
         </ol>
@@ -190,8 +190,21 @@ body {
       <h3>Analysis</h3>
       <div class="controlbox">
         <span class="sizeselectortext">Community clustering:</span>
-        <div class="sizeselector" id="communitylevelselector"></div>
-        <span class="sizeselectortext">Size range:</span>
+        <input type="button" name="communityCluster" value="Color by community" id="communityCluster" />
+        <span class="sizeselectortext">Centrality Ranking:</span>
+         <div id="rankselector">
+          <button class="dropdownselected" id="currentranker">Disabled</button>
+          <button class="dropdownbutton" id="selectranker">Select a ranking method</button>
+
+        <ol class="controlwrapper dropdownlist" id="ranklist">
+          <li>Disabled</li>
+          <li>PageRank</li>
+          <li>Eigenvector</li>
+          <li>Betweenness</li>
+        </ol>
+
+        </div>
+        <span class="sizeselectortext">Size range:</span><input class="sizeselectorvalue" type="text" id="minradius" disabled />-<input class="sizeselectorvalue" type="text" id="maxradius" disabled />
         <div class="sizeselector" id="sizerangeselector"></div>
       </div>
       <h3>Dev Stuff</h3>

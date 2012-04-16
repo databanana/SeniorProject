@@ -58,51 +58,6 @@ $(document).ready(function() {
 
     //Set up controls
 
-  $("#linewidthselector").slider({'min':0.1,
-    'max': 4,
-    'step':0.1,
-    'value': edgeAttr['stroke-width'],
-    'slide': function(event, ui) {
-        $("#linewidth").val(ui.value);
-    },
-    'stop':function(event, ui) {
-        grapher.setLineWidth(ui.value);
-    },
-  });
-
-  $("#linewidth").val(edgeAttr['stroke-width']);
-
-  $("#nodesizeselector").slider({'min':1, 'max':50, 'value':nodeRadius, slide: function(event, ui) {
-        $("#nodesize").val(ui.value);
-    },
-    'stop': function(event, ui) {
-        grapher.setCircleRadius(ui.value);
-    }
-  });
-
-  $("#communitylevelselector").slider({'min':0.0,
-    'max': 1.0,
-    'step':0.01,
-    'value': 0,
-    'stop':function(event, ui) {
-        grapher.findCommunities(ui.value);
-    },
-  });
-
-  $("#sizerangeselector").slider({
-    'range': true,
-    'min':1,
-    'max': 50,
-    'step': 1,
-    'values': [nodeRadius, nodeRadius],
-    'stop':function(event, ui) {
-        Dajaxice.fbauth.get_pagerank(Dajax.process,{min_radius:ui.values[0], max_radius:ui.values[1]})
-    },
-  });
-
-
-
-  $("#nodesize").val(nodeRadius);
 
   $("h3 + div").each(function() {$(this).prev().andSelf().wrapAll("<div class='controlwrapper' />")});
   $(".controlwrapper").addClass('ui-helper-reset ui-corner-all ui-widget');
@@ -117,11 +72,14 @@ $(document).ready(function() {
   $(".controlwrapper > h3 > span").prepend("<span class='ui-icon  ui-icon-triangle-1-e ui-icon-triangle-1-s' />");
 
   $(".controlwrapper > h3").click(function() {
-    $(this).next().toggle({'effect':'blind'});
+    $(this).next().toggle({'effect':'blind'}, repositionElements);
     $(this).toggleClass('ui-state-active');
     $(this).contents().contents().first().toggleClass('ui-icon-triangle-1-s');
   });
 
+
+  //Graph Options
+  //Layout
   $("#currentlayout").button()
     .next()
     .button({
@@ -170,6 +128,36 @@ $(document).ready(function() {
     }
   });
 
+  //Edge width
+
+  $("#linewidthselector").slider({'min':0.1,
+    'max': 4,
+    'step':0.1,
+    'value': edgeAttr['stroke-width'],
+    'slide': function(event, ui) {
+        $("#linewidth").val(ui.value);
+    },
+    'stop':function(event, ui) {
+        grapher.setLineWidth(ui.value);
+    },
+  });
+
+  $("#linewidth").val(edgeAttr['stroke-width']);
+
+  //Node radius
+
+  $("#nodesizeselector").slider({'min':1, 'max':50, 'value':nodeRadius, slide: function(event, ui) {
+        $("#nodesize").val(ui.value);
+    },
+    'stop': function(event, ui) {
+        grapher.setCircleRadius(ui.value);
+        $("#currentranker").text("Disabled");
+        $("#sizerangeselector").slider('disable');   
+    }
+  });
+
+  $("#nodesize").val(nodeRadius);
+
   //Color selectors
   var colorparts = ['00','55','AA','FF'];
   for (var i in colorparts) {
@@ -188,6 +176,7 @@ $(document).ready(function() {
 
 
   $("[name='nodecolor']").change(function() {
+    $("#clusteringOff").checked = true;
     nodeColor = '#' + $("[name='nodecolor']").val();
     grapher.updateAllNodeColors();
   });
@@ -196,13 +185,90 @@ $(document).ready(function() {
     grapher.updateAllEdgeAttr();
   });
 
+  //Analysis
+  //Community clustering
 
+  $("[name='communityCluster']").button()
+  //$("#clusteringRadio").buttonset();
+  $("[name='communityCluster']").click(function() {
+    $("[name='nodecolor']").val("--");
+    grapher.findCommunities(1);
+  });
+
+  //Cenrality ranking
+  $("#currentranker").button()
+    .next()
+    .button({
+      'text':false,
+      'icons': {
+        'primary':'ui-icon-triangle-1-s',
+      }
+    })
+    .parent()
+      .buttonset();
+
+  $("#selectranker").click(function() {
+    $("#ranklist").toggle('blind');
+  });
+
+  $("#ranklist").addClass('ui-helper-clear ui-autocomplete ui-menu ui-widget ui-widget-content ui-corner-all');
+  $("#ranklist li").addClass("ui-helper-clear ui-menu-item ui-corner-all");
+  $("#ranklist li").hover(function() {$(this).toggleClass('ui-state-hover');});
+  $("#ranklist").selectable({'stop': function() {
+        var selection = $("#ranklist .ui-selected").text();
+        if (selection=="Disabled") {
+            $("#sizerangeselector").slider('disable');
+        } else {
+            $("#nodesize").val('--');
+            $("#sizerangeselector").slider('enable');
+            var minradius = $("#sizerangeselector").slider('values')[0];
+            var maxradius = $("#sizerangeselector").slider('values')[1];
+            $("#overlay").show();
+            $("#loadingcircle").show();
+            $("#loadingtext").text('Calculating ranks...');
+            Dajaxice.fbauth.get_rank(Dajax.process,{'algorithm':selection, 'min_radius':minradius, 'max_radius':maxradius});
+      }
+      $("#currentranker").text(selection);
+      $("#ranklist").toggle('blind');
+
+        //Resize stuff
+    }
+  });
+
+
+  //Size range
+  $("#minradius").val(0);
+  $("#maxradius").val(50);
+  $("#sizerangeselector").slider({
+    'range': true,
+    'min':1,
+    'max': 50,
+    'step': 1,
+    'values': [1, 50],
+    'stop':function(event, ui) {
+        $("#nodesize").val('--');
+        $("#minradius").val(ui.values[0]);
+        $("#maxradius").val(ui.values[1]);
+        $("#overlay").show();
+        $("#loadingcircle").show();
+        $("#loadingtext").text('Calculating ranks...');
+        Dajaxice.fbauth.get_pagerank(Dajax.process,{min_radius:ui.values[0], max_radius:ui.values[1]})
+    },
+  }).slider('disable');
 
   //Position and hide elements
-  $("#layoutlist").show();
-  $("#layoutlist").position({'of':$("#currentlayout"), 'at':'left bottom', 'my':'left top'});
+
+  repositionElements = function() {
+    $(".dropdownlist").show();
+    $("#ranklist").position({'of':$("#currentranker"), 'at':'left bottom', 'my':'left top'});
+    $("#layoutlist").position({'of':$("#currentlayout"), 'at':'left bottom', 'my':'left top'});
+    $(".dropdownlist").hide();
+  }
+
+  repositionElements();
+
   $("#layoutlist").width($("#currentlayout").width());
-  $("#layoutlist").hide();
+  $("#ranklist").width($("#currentlayout").width());
 
   $(".controlwrapper > h3").each(function() {
     $(this).next().hide();
@@ -214,6 +280,7 @@ $(document).ready(function() {
   var firstbox = $(".controlwrapper > h3").first();
   firstbox.toggleClass('ui-state-active').contents().contents().first().toggleClass('ui-icon-triangle-1-s');
   firstbox.next().show();
+
 
     //Set up graph objects
 
@@ -583,6 +650,8 @@ $(document).ready(function() {
         $.each(ranks, function(node,radius) {
             grapher.graph[node].circle.attr({'r':radius, 'stroke-width':radius/6});
         });
+        $("#overlay").hide();
+        $("#loadingcircle").hide();
     }
  
 });

@@ -135,3 +135,43 @@ def get_pagerank(request, min_radius, max_radius):
 	result = dajax.json()
 	print "Almost there!"
 	return result
+
+@dajaxice_register
+def get_rank(request, algorithm, min_radius, max_radius):
+	dajax = Dajax()
+	user = request.session['fbuser']
+	if 'graphwrapper' in request.session:
+		G_wrapper = request.session['graphwrapper']
+	else:
+		G_wrapper = GraphWrapper(user.get_friend_ids(), user.get_friends_links())
+		request.session['graphwrapper'] = G_wrapper
+	if algorithm=='PageRank':
+		if 'pagerank' in request.session:
+			rank = request.session['pagerank']
+		else:
+			rank = nx.pagerank_numpy(G_wrapper.G)
+			request.session['pagerank'] = rank
+	elif algorithm=='Betweenness':
+		if 'betweenness' in request.session:
+			rank = request.session['betweenness']
+		else:
+			rank = nx.betweenness_centrality(G_wrapper.G)
+	elif algorithm=='Eigenvector':
+		if 'eigenvector' in request.session:
+			rank = request.session['eigenvector']
+		else:
+			rank = nx.eigenvector_centrality(G_wrapper.G)
+	min_area = np.pi*min_radius**2
+	max_area = np.pi*max_radius**2
+	area_change = max_area-min_area
+	min_rank = min(rank.values())
+	max_rank = max(rank.values())
+	rank_change = max_rank-min_rank
+	node_radii = {}
+	for node, rank in rank.iteritems():
+		area = (rank-min_rank)/rank_change * area_change + min_area
+		radius = (area/np.pi)**0.5
+		node_radii[node] = radius
+	dajax.add_data(node_radii, 'grapher.resizeNodes')
+	result = dajax.json()
+	return result
