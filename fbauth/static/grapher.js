@@ -17,12 +17,13 @@ $(document).ready(function() {
 
     var nodeColor = "#ff7373";
     
+    var nodeRadius = 6;
+
     var nodeHoverAttr = {
-        'stroke-width': 5,
+        'stroke-width': nodeRadius*1.5/6,
         //'r': 10,
     };
 
-    nodeRadius = 10;
     
     var edgeAttr = {
         stroke: "#33CCCC",
@@ -188,7 +189,7 @@ $(document).ready(function() {
   //Analysis
   //Community clustering
 
-  $("[name='communityCluster']").button()
+  $("[name='communityCluster']").button().button('disable');
   //$("#clusteringRadio").buttonset();
   $("[name='communityCluster']").click(function() {
     $("[name='nodecolor']").val("--");
@@ -207,9 +208,11 @@ $(document).ready(function() {
     .parent()
       .buttonset();
 
+  $("#currentranker").button('disable');
+  
   $("#selectranker").click(function() {
     $("#ranklist").toggle('blind');
-  });
+  }).button('disable');
 
   $("#ranklist").addClass('ui-helper-clear ui-autocomplete ui-menu ui-widget ui-widget-content ui-corner-all');
   $("#ranklist li").addClass("ui-helper-clear ui-menu-item ui-corner-all");
@@ -252,7 +255,8 @@ $(document).ready(function() {
         $("#overlay").show();
         $("#loadingcircle").show();
         $("#loadingtext").text('Calculating ranks...');
-        Dajaxice.fbauth.get_pagerank(Dajax.process,{min_radius:ui.values[0], max_radius:ui.values[1]})
+        var engine = $("#currentranker").text();
+        Dajaxice.fbauth.get_rank(Dajax.process,{'algorithm':engine, min_radius:ui.values[0], max_radius:ui.values[1]});
     },
   }).slider('disable');
 
@@ -310,6 +314,7 @@ $(document).ready(function() {
         this.circle.attr('opacity', 0);
         this.circle.attr(nodeAttr);
         this.circle.attr('r', nodeRadius);
+        this.circle.attr('stroke-width', nodeRadius/6);
         this.circle.attr('fill', nodeColor);
         this.circle.animate({'opacity':1}, fadeInDuration, '>');
         this.move = function(dx, dy) {
@@ -449,6 +454,9 @@ $(document).ready(function() {
     var graph = grapher.graph;  
 
     grapher.add_nodes = function(node_names) {
+        $("#currentranker").button('enable');
+        $("#selectranker").button('enable');
+        $("[name='communityCluster']").button('enable');
         grapher.loadedNodes = true;
         //console.log(node_ids);
         $(".loadingtext").text("Drawing friends...");
