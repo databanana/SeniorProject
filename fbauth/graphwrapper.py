@@ -17,7 +17,7 @@ class GraphWrapper:
 		self.numNodes = len(nodes)
 		self.dendogram = None
 
-	def find_groups_slow(self, num_groups):
+	def find_groups_girvan_newman(self, num_groups):
 		if (num_groups==1):
 			return set([self.G])
 		elif (num_groups in self.groupCache):
@@ -208,3 +208,29 @@ class GraphWrapper:
 			result.append(self.calculate_color(c))
 			c += p
 		return result
+
+	def calculate_pagerank(self, damping=0.85):
+		#A random crawler will travel upon every outgoing edge with equal probability
+		#The crawler will jump to another node with P=1-damping
+		pr_transition = nx.to_numpy_matrix(self.G)
+		pr_transition = (m / np.sum(m,1))*damping + (1-damping)/self.numNodes
+		#Initial probability is equal across nodes
+		pr_initial = np.ones([1, self.numNodes])
+		#Multiply continuously and check for convergence
+		eps = .0001
+		max_pow = 200
+
+		pr_prev = pr_transition
+		pr_current = pr_transition**2
+		current_pow = 2
+
+		while (np.all(np.abs(p_prev-p_curr) > eps) and current_pow < max_pow):
+			pr_prev = pr_curr
+			pr_curr = pr_prev**2
+			current_pow = current_pow*2
+
+		#Return results
+		return pr_initial * pr_current
+
+
+
