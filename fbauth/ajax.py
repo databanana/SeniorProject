@@ -26,8 +26,9 @@ def get_friend_ids(request, auto = False):
 	return dajax.json()
 
 @dajaxice_register
-def position_friends(request, engine, width, height, auto = False):
+def position_friends(request, engine, width, height, widthoffset=0, auto = False):
 	print "Positioning friends"
+	width = width-widthoffset
 	ratio = float(width)/float(height)
 	dajax = Dajax()
 	s = request.session
@@ -64,7 +65,7 @@ def position_friends(request, engine, width, height, auto = False):
 	y_scale = float(height-20)/float(max_y-min_y)
 	scaled_layout = {}
 	for node in layout:
-		x = int((layout[node][0] + x_shift) * x_scale)+10
+		x = int((layout[node][0] + x_shift) * x_scale)+10+widthoffset
 		y = int((layout[node][1] + y_shift) * y_scale)+10
 		scaled_layout[node] = (x,y)
 	#print scaled_layout

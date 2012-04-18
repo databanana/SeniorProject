@@ -116,6 +116,7 @@ $(document).ready(function() {
             'engine': 'twopi',
             'width': $('#papercontainer').width(),
             'height':$('#papercontainer').height(),
+            'widthoffset':$('#controls').width(),
         });
       } else if (selection=="Force-directed") {
         grapher.engine = "sfdp";
@@ -124,6 +125,7 @@ $(document).ready(function() {
             'engine': 'sfdp',
             'width': $('#papercontainer').width(),
             'height':$('#papercontainer').height(),
+            'widthoffset':$('#controls').width(),
         });
       }
     }
@@ -460,8 +462,9 @@ $(document).ready(function() {
         grapher.loadedNodes = true;
         //console.log(node_ids);
         $(".loadingtext").text("Drawing friends...");
+        var controlsWidth = $("#controls").width();
         for (id in node_names) {
-            graph[id] = new Node(id, node_names[id], Math.floor(Math.random()*(pwidth-20))+10, Math.floor(Math.random()*(pheight-20))+10, 10);
+            graph[id] = new Node(id, node_names[id], Math.floor(Math.random()*(pwidth-20-controlsWidth)+10+controlsWidth), Math.floor(Math.random()*(pheight-20))+10, 10);
         }
         $("#loadingcircle").hide();
         $("#overlay").hide();
@@ -534,6 +537,7 @@ $(document).ready(function() {
                 'engine': grapher.engine,
                 'width': $('#papercontainer').width(),
                 'height':$('#papercontainer').height(),
+                'widthoffset':$('#controls').width(),
                 'auto':true,
             });
         } else {
@@ -542,6 +546,7 @@ $(document).ready(function() {
                 'engine': grapher.engine,
                 'width': $('#papercontainer').width(),
                 'height':$('#papercontainer').height(),
+                'widthoffset':$('#controls').width(),
             }); 
         }
     }
@@ -555,6 +560,7 @@ $(document).ready(function() {
             'engine': grapher.engine,
             'width': $('#papercontainer').width(),
             'height':$('#papercontainer').height(),
+            'widthoffset':$('#controls').width(),
             'auto':true,
         });
     }
@@ -624,6 +630,7 @@ $(document).ready(function() {
             'engine': grapher.engine,
             'width': $('#papercontainer').width(),
             'height':$('#papercontainer').height(),
+            'widthoffset':$('#controls').width(),
         };
         if (args['auto']) {
             djangoargs['auto'] = true;
