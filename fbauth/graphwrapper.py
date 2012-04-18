@@ -2,6 +2,7 @@ import networkx as nx
 import numpy as np
 from sets import ImmutableSet
 import fbauth.community as community
+import random
 
 class GraphWrapper:
 	def __init__(self, nodes, edges):
@@ -178,6 +179,9 @@ class GraphWrapper:
 
 	#Use p between 0 and 1
 	def calculate_color(self, p):
+		result = [random.randint(0,255) for x in xrange(3)]
+		return "#"+''.join([hex(x)[-2:] if len(hex(x)) >3 else "0"+hex(x)[-1] for x in result])
+
 		p = min(p, 1)
 		print "Calculating color for position %s" % p
 		result = [0,0,0]

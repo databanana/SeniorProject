@@ -117,7 +117,7 @@ body {
 
 .sizeselectorvalue {
   display: inline-block;
-  width: 3em;
+  width: 2em;
   border: none;
 }
 
@@ -222,6 +222,10 @@ body {
             <input type="button" name="Request Friends" value="Request Friends" id="requestfriends" onclick="$('#overlay').show();$('#loadingcircle').show();$('.loadingtext').text('Loading friends...');Dajaxice.fbauth.get_friend_ids(Dajax.process);">
     <input type="button" name="Position Friends" value = "Position Friends" id = "positionfriends" onclick="$('#overlay').show();$('#loadingcircle').show();$('.loadingtext').text('Calculating layout...');Dajaxice.fbauth.position_friends(Dajax.process, {'engine': 'sfdp', 'width': $('#papercontainer').width(), 'height':$('#papercontainer').height()})">
     <input type="button" name="Connect Friends" value="Connect Friends" id="connectfriends" onclick="$('#overlay').show();$('#loadingcircle').show();$('.loadingtext').text('Loading connections...');Dajaxice.fbauth.connect_friends(Dajax.process);">
+      </div>
+      <h3>About</h3>
+      <div class="controlbox">
+        Created by <a href="http://www.seas.upenn.edu/~travisgi/" target="_blank">Travis</a>
       </div>
     </div>
 

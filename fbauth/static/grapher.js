@@ -5,6 +5,21 @@ $(document).ready(function() {
     var paper = new Raphael($("#papercontainer")[0], pwidth, pheight);
     console.log("height:" + pheight);
 
+    //Set up resize call for paper
+    $(window).resize(function() {
+      pwidth = $("#papercontainer").width();
+      pheight =  $("#papercontainer").height();
+      paper.setSize(pwidth, pheight);
+      var hide = $("#overlay").is(':hidden');
+      $("#overlay").show();
+      $("#overlay").width(pwidth);
+      $("#overlay").height(pheight);
+      $("#overlay").position({'of': $("#papercontainer")});
+      if (hide)
+        $("#overlay").hide();
+      //setTimeout(add, timeout);
+    });
+
     //Set up variables
 
     var fadeInDuration = 1500;
