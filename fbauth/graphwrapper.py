@@ -213,28 +213,32 @@ class GraphWrapper:
 			c += p
 		return result
 
+	#need to debug this
 	def calculate_pagerank(self, damping=0.85):
 		#A random crawler will travel upon every outgoing edge with equal probability
 		#The crawler will jump to another node with P=1-damping
+		m = nx.to_numpy_matrix(self.G)
 		pr_transition = nx.to_numpy_matrix(self.G)
 		pr_transition = (m / np.sum(m,1))*damping + (1-damping)/self.numNodes
 		#Initial probability is equal across nodes
-		pr_initial = np.ones([1, self.numNodes])
+		pr_initial = np.ones([1, self.numNodes]) * 1/self.numNodes
 		#Multiply continuously and check for convergence
-		eps = .0001
+		eps = .00001
 		max_pow = 200
 
 		pr_prev = pr_transition
-		pr_current = pr_transition**2
+		pr_curr = pr_transition**2
 		current_pow = 2
 
-		while (np.all(np.abs(p_prev-p_curr) > eps) and current_pow < max_pow):
+		while (np.any(np.abs(pr_prev-pr_curr) > eps) and current_pow < max_pow):
 			pr_prev = pr_curr
 			pr_curr = pr_prev**2
 			current_pow = current_pow*2
 
 		#Return results
-		return pr_initial * pr_current
+		pr = pr_initial * pr_curr
+		pr = [rank for row in pr.tolist() for rank in row]
+		return {x[0]:x[1] for x in zip(self.G.nodes(), pr)}
 
 	def calculate_eigenvector_centrality(self):
 		return

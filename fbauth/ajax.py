@@ -150,7 +150,8 @@ def get_rank(request, algorithm, min_radius, max_radius):
 		if 'pagerank' in request.session:
 			rank = request.session['pagerank']
 		else:
-			rank = nx.pagerank_numpy(G_wrapper.G)
+			#rank = nx.pagerank_numpy(G_wrapper.G)
+			rank = G_wrapper.calculate_pagerank()
 			request.session['pagerank'] = rank
 	elif algorithm=='Betweenness':
 		if 'betweenness' in request.session:
