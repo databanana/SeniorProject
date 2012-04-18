@@ -232,5 +232,9 @@ class GraphWrapper:
 		#Return results
 		return pr_initial * pr_current
 
+	def calculate_eigenvector_centrality(self):
+		return
 
+	def calculate_degree_centrality(self):
+		return
 

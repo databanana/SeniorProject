@@ -4,7 +4,10 @@
 <head>
 <title>{% block title %}Senior project template{% endblock %}</title>
 {% dajaxice_js_import %}
+<script type="text/javascript" src ="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 <script src="{{ STATIC_URL }}jquery.dajax.core.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}jquery-ui.js"></script>
+<link type="text/css" href="{{ STATIC_URL }}custom-theme/jquery-ui-1.8.18.custom.css" rel="stylesheet" />
 {% block head %}{% endblock %}
 </head>
 <body>

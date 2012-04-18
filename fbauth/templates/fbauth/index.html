@@ -2,6 +2,16 @@
 {% block title %}
 Log in to Facebook
 {% endblock %}
+{% block head %}
+<script type="text/javascript">
+$("document").ready(function() {
+
+	$("#loginbutton").button();
+
+})
+</script>
+{% endblock %}
 {% block body %}
-<a href="https://www.facebook.com/dialog/oauth?client_id={{ app_id }}&redirect_uri={{ redirect_url }}">Log in to FaceBook</a>
+<div style="margin-left:auto; margin-right: auto; margin-top: 100px; width:750px"><img src="{{ STATIC_URL }}images/NameIcon.png" alt="Friend Grapher" /></div>
+<a id="loginbutton" href="https://www.facebook.com/dialog/oauth?client_id={{ app_id }}&redirect_uri={{ redirect_url }}" style="display:block; margin-left: auto; margin-right:auto; margin-top:10px; width:300px">Log in with Facebook</a>
 {% endblock %}
