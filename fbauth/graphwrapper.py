@@ -243,8 +243,13 @@ class GraphWrapper:
 		return {x[0]:x[1] for x in zip(self.G.nodes(), pr)}
 
 	def calculate_eigenvector_centrality(self):
-		return
+		m = nx.to_numpy_matrix(self.G)
+		D,V = np.linalg.eig(m)
+		max_index = D.argmax()
+		max_eigenvector = V[:,max_index]
+		ranks = [rank[0] for rank in np.real(max_eigenvector).tolist()]
+		return {x[0]:x[1] for x in zip(self.G.nodes(), ranks)}
 
 	def calculate_degree_centrality(self):
-		return
+		return {node:float(len(self.G.neighbors(node))) for node in self.G.nodes()}
 

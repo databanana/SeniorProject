@@ -147,8 +147,8 @@ def get_rank(request, algorithm, min_radius, max_radius):
 		G_wrapper = GraphWrapper(user.get_friend_ids(), user.get_friends_links())
 		request.session['graphwrapper'] = G_wrapper
 	if algorithm=='PageRank':
-		if False:
-		#if 'pagerank' in request.session:
+		#if False:
+		if 'pagerank' in request.session:
 			rank = request.session['pagerank']
 		else:
 			#rank = nx.pagerank_numpy(G_wrapper.G)
@@ -160,11 +160,21 @@ def get_rank(request, algorithm, min_radius, max_radius):
 			rank = request.session['betweenness']
 		else:
 			rank = nx.betweenness_centrality(G_wrapper.G)
+			request.session['betweenness'] = rank
 	elif algorithm=='Eigenvector':
 		if 'eigenvector' in request.session:
 			rank = request.session['eigenvector']
 		else:
-			rank = nx.eigenvector_centrality(G_wrapper.G)
+			#rank = nx.eigenvector_centrality(G_wrapper.G)
+			rank = G_wrapper.calculate_eigenvector_centrality()
+			request.session['eigenvector'] = rank
+	elif algorithm=='Degree':
+		if false:
+		#if 'degree' in request.session:
+			rank = request.session['degree']
+		else:
+			rank = G_wrapper.calculate_degree_centrality()
+			request.session['degree'] = rank
 	else:
 		return dajax.json();
 	min_area = np.pi*min_radius**2
