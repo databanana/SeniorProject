@@ -50,7 +50,7 @@ def position_friends(request, engine, width, height, widthoffset=0, auto = False
 	G = G_wrapper.G
 	print "Producing layout"
 	if (engine=="sfdp"):
-		layout=nx.graphviz_layout(G, prog=engine, args="-Gratio=%f -Gsize=\"%f,%f\"" % (ratio, 10., ratio*10.))
+		layout=nx.graphviz_layout(G, prog=engine, args="-Gratio=%f -Gsize=\"%f,%f\" -GK=0.5" % (ratio, 10., ratio*10.))
 	elif (engine=="twopi"):
 		layout=nx.graphviz_layout(G, prog=engine, args="-Gratio=%f" % ratio)
 	else:
