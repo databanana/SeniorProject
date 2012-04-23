@@ -47,12 +47,15 @@ def position_friends(request, engine, width, height, widthoffset=0, auto = False
 	print "Got links"
 	#print links
 	G_wrapper = GraphWrapper(nodes, links)
-	#This doesn't work--something to do with pickling files?
-	#request.session['graphwrapper'] = G_wrapper
-	#request.session['nxgraph'] = G_wrapper.G
 	G = G_wrapper.G
 	print "Producing layout"
-	layout=nx.graphviz_layout(G, prog=engine, args="-Gratio=%f" % ratio)
+	if (engine=="sfdp"):
+		layout=nx.graphviz_layout(G, prog=engine, args="-Gratio=%f -Gsize=\"%f,%f\"" % (ratio, 10., ratio*10.)
+	elif (engine=="twopi"):
+		layout=nx.graphviz_layout(G, prog=engine, args="-Gratio=%f" % ratio)
+	else:
+		#Invalid layout engine?
+		return dajax.json()
 	x_coords = [p[0] for p in layout.values()]
 	y_coords = [p[1] for p in layout.values()]
 	min_x = min(x_coords)
@@ -111,33 +114,6 @@ def find_groups(request, n):
 	return dajax.json()
 
 @dajaxice_register
-def get_pagerank(request, min_radius, max_radius):
-	dajax=Dajax()
-	user = request.session['fbuser']
-	if 'pagerank' in request.session:
-		pr = request.session['pagerank']
-	else:
-		G_wrapper = GraphWrapper(user.get_friend_ids(), user.get_friends_links())
-		pr = nx.pagerank_numpy(G_wrapper.G)
-		request.session['pagerank'] = pr
-	min_pr = min(pr.values())
-	max_pr = max(pr.values())
-	min_area = np.pi*min_radius**2
-	max_area = np.pi*max_radius**2
-	area_change = max_area-min_area
-	pr_change = max_pr-min_pr
-	node_radii = {}
-	for node, rank in pr.iteritems():
-		area = (rank-min_pr)/pr_change * area_change + min_area
-		radius = (area/np.pi)**0.5
-		node_radii[node] = radius
-	dajax.add_data(node_radii, 'grapher.resizeNodes')
-	print "Forming json"
-	result = dajax.json()
-	print "Almost there!"
-	return result
-
-@dajaxice_register
 def get_rank(request, algorithm, min_radius, max_radius):
 	dajax = Dajax()
 	user = request.session['fbuser']
@@ -177,6 +153,8 @@ def get_rank(request, algorithm, min_radius, max_radius):
 			request.session['degree'] = rank
 	else:
 		return dajax.json();
+
+	#Scale nodes' area (not radius!) between the areas of circles with min and max radius
 	min_area = np.pi*min_radius**2
 	max_area = np.pi*max_radius**2
 	area_change = max_area-min_area
