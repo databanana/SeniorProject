@@ -220,6 +220,7 @@ class GraphWrapper:
 		m = nx.to_numpy_matrix(self.G)
 		pr_transition = nx.to_numpy_matrix(self.G)
 		pr_transition = (m / np.sum(m,1))*damping + (1-damping)/self.numNodes
+		pr_transition[np.isnan(pr_transition)] = 0
 		#Initial probability is equal across nodes
 		pr_initial = np.ones([1, self.numNodes]) * 1/self.numNodes
 		#Multiply continuously and check for convergence
@@ -227,12 +228,12 @@ class GraphWrapper:
 		max_pow = 200
 
 		pr_prev = pr_transition
-		pr_curr = pr_transition**2
+		pr_curr = np.dot(pr_prev, pr_prev)
 		current_pow = 2
-
+		print "Starting pagerank loop"
 		while (np.any(np.abs(pr_prev-pr_curr) > eps) and current_pow < max_pow):
 			pr_prev = pr_curr
-			pr_curr = pr_prev**2
+			pr_curr = np.dot(pr_prev, pr_prev)
 			current_pow = current_pow*2
 
 		#Return results

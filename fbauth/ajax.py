@@ -151,6 +151,7 @@ def get_rank(request, algorithm, min_radius, max_radius):
 			rank = request.session['pagerank']
 		else:
 			#rank = nx.pagerank_numpy(G_wrapper.G)
+			print "Calculating pagerank"
 			rank = G_wrapper.calculate_pagerank()
 			request.session['pagerank'] = rank
 	elif algorithm=='Betweenness':
@@ -163,6 +164,8 @@ def get_rank(request, algorithm, min_radius, max_radius):
 			rank = request.session['eigenvector']
 		else:
 			rank = nx.eigenvector_centrality(G_wrapper.G)
+	else:
+		return dajax.json();
 	min_area = np.pi*min_radius**2
 	max_area = np.pi*max_radius**2
 	area_change = max_area-min_area
