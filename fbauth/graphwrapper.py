@@ -225,7 +225,7 @@ class GraphWrapper:
 		pr_initial = np.ones([1, self.numNodes]) * 1/self.numNodes
 		#Multiply continuously and check for convergence
 		eps = .00001
-		max_pow = 100
+		max_pow = 400
 
 		pr_prev = pr_transition
 		pr_curr = np.dot(pr_prev, pr_prev)
@@ -238,7 +238,7 @@ class GraphWrapper:
 
 		#Return results
 		#pr = pr_initial * pr_curr
-		pr = np.dot(pr_initial, pr_curr)
+		pr = np.dot(pr_curr, pr_initial.T)
 		pr = [rank for row in pr.tolist() for rank in row]
 		return {x[0]:x[1] for x in zip(self.G.nodes(), pr)}
 

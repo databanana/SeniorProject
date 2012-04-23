@@ -147,7 +147,8 @@ def get_rank(request, algorithm, min_radius, max_radius):
 		G_wrapper = GraphWrapper(user.get_friend_ids(), user.get_friends_links())
 		request.session['graphwrapper'] = G_wrapper
 	if algorithm=='PageRank':
-		if 'pagerank' in request.session:
+		if False:
+		#if 'pagerank' in request.session:
 			rank = request.session['pagerank']
 		else:
 			#rank = nx.pagerank_numpy(G_wrapper.G)
