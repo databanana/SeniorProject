@@ -50,9 +50,9 @@ def position_friends(request, engine, width, height, widthoffset=0, auto = False
 	G = G_wrapper.G
 	print "Producing layout"
 	if (engine=="sfdp"):
-		layout=nx.graphviz_layout(G, prog='fdp', args="-Gratio=%f -GK=1.5" % (ratio))
+		layout=nx.graphviz_layout(G, prog='sfdp', args="-Gratio=%f -GK=1.5" % (ratio))
 	elif (engine=="twopi"):
-		layout=nx.graphviz_layout(G, prog=engine, args="-Gratio=%f" % ratio)
+		layout=nx.graphviz_layout(G, prog='circo', args="-Gratio=%f" % ratio)
 	else:
 		#Invalid layout engine?
 		return dajax.json()
