@@ -51,7 +51,7 @@ def grapher(request):
 
 	u = request.session['fbuser']
 	print "Access token: %s" % u.access_token
-	f = u.get_friends()
+	#f = u.get_friends()
 	if (not u.recently_updated()):
 		print("Not recently updated")
 		u.create_friends()
