@@ -1,4 +1,3 @@
-//color scheme: http://colorschemedesigner.com/#3i31Tw0w0w0w0
 $(document).ready(function() {
     var pwidth = $("#papercontainer").width();
     var pheight =  $("#papercontainer").height();
@@ -17,10 +16,9 @@ $(document).ready(function() {
       $("#overlay").position({'of': $("#papercontainer")});
       if (hide)
         $("#overlay").hide();
-      //setTimeout(add, timeout);
     });
 
-    //Set up variables
+    //Set up configurable variables, mainly for UI effects
 
     var fadeInDuration = 1500;
     
@@ -55,13 +53,13 @@ $(document).ready(function() {
     }
 
     //Set up overlays
+
     $("#overlay").width(pwidth);
     $("#overlay").height(pheight);
     $("#overlay").position({'of': $("#papercontainer")});
 
     $(".loadingindicator").position({'of': $("#overlay"), 'collision': 'none'});
 
-    //$("#loadingbarwrapper").position({'of': $("#overlay")});
     $("#loadingbar").progressbar();
 
     //Hide overlays
@@ -71,10 +69,7 @@ $(document).ready(function() {
     //Set up buttons
     $("input:button").button();
 
-
-    //Set up controls
-
-
+  //Set up controls
   $("h3 + div").each(function() {$(this).prev().andSelf().wrapAll("<div class='controlwrapper' />")});
   $(".controlwrapper").addClass('ui-helper-reset ui-corner-all ui-widget');
 
@@ -96,6 +91,7 @@ $(document).ready(function() {
 
   //Graph Options
   //Layout
+  //Current layout button
   $("#currentlayout").button()
     .next()
     .button({
@@ -106,12 +102,12 @@ $(document).ready(function() {
     })
     .parent()
       .buttonset();
-
+  //Layout drop down button
   $("#selectlayout").click(function() {
     $("#layoutlist").toggle('blind');
   });
 
-
+  //List of available layouts
   $("#layoutlist").addClass('ui-helper-clear ui-autocomplete ui-menu ui-widget ui-widget-content ui-corner-all');
   $("#layoutlist li").addClass("ui-helper-clear ui-menu-item ui-corner-all");
   $("#layoutlist li").hover(function() {$(this).toggleClass('ui-state-hover');});
@@ -146,8 +142,7 @@ $(document).ready(function() {
     }
   });
 
-  //Edge width
-
+  //Edge width selector
   $("#linewidthselector").slider({'min':0.1,
     'max': 4,
     'step':0.1,
@@ -162,8 +157,7 @@ $(document).ready(function() {
 
   $("#linewidth").val(edgeAttr['stroke-width']);
 
-  //Node radius
-
+  //Node radius selector
   $("#nodesizeselector").slider({'min':1, 'max':50, 'value':nodeRadius, slide: function(event, ui) {
         $("#nodesize").val(ui.value);
     },
@@ -205,9 +199,7 @@ $(document).ready(function() {
 
   //Analysis
   //Community clustering
-
   $("[name='communityCluster']").button().button('disable');
-  //$("#clusteringRadio").buttonset();
   $("[name='communityCluster']").click(function() {
     $("[name='nodecolor']").val("--");
     grapher.findCommunities(1);
@@ -225,12 +217,14 @@ $(document).ready(function() {
     .parent()
       .buttonset();
 
+  //Disable the button as all nodes are currently the same size
   $("#currentranker").button('disable');
   
   $("#selectranker").click(function() {
     $("#ranklist").toggle('blind');
   }).button('disable');
 
+  //Set up the list of available centrality ranking methods
   $("#ranklist").addClass('ui-helper-clear ui-autocomplete ui-menu ui-widget ui-widget-content ui-corner-all');
   $("#ranklist li").addClass("ui-helper-clear ui-menu-item ui-corner-all");
   $("#ranklist li").hover(function() {$(this).toggleClass('ui-state-hover');});
@@ -304,7 +298,7 @@ $(document).ready(function() {
 
 
     //Set up graph objects
-
+    //Represents a node in the graph
     var Node = function(id, name, x, y, r) {
         this.name = name;
         this.id = id;
@@ -426,7 +420,7 @@ $(document).ready(function() {
         this.circle.hover(this.mouseEnter, this.mouseExit, this, this);
     }
 
-    
+    //Represents an edge in the graph
     var Edge = function(startNode, endNode) {
         this.startNode = startNode;
         this.endNode = endNode;
@@ -456,20 +450,24 @@ $(document).ready(function() {
 
 
     //Graph object and functions
-
+    //Namespace for all graphing functions
     window.grapher = {};
 
     grapher.loadedNodes = false;
     grapher.loadedEdges = false;
 
+    //Holds all nodes
     grapher.graph = {};
 
+    //Holds all edges
     grapher.edges = [];
 
+    //Current layout engine
     grapher.engine = "sfdp";
 
     var graph = grapher.graph;  
 
+    //Add nodes from a list of node IDs to the graph
     grapher.add_nodes = function(node_names) {
         $("#currentranker").button('enable');
         $("#selectranker").button('enable');
@@ -485,6 +483,7 @@ $(document).ready(function() {
         $("#overlay").hide();
     }
 
+    //Position nodes based on their ID
     grapher.set_positions = function(node_positions) {
         grapher.hideAllEdges();
         $("#overlay").show();
@@ -501,6 +500,7 @@ $(document).ready(function() {
         $("#overlay").hide();
     }
 
+    //Add edges between nodes; input is a list of [node1, node2] pairs
     grapher.add_edges = function(edges) {
         grapher.loadedEdges = true;
         $("#loadingcircle").hide();
@@ -537,6 +537,7 @@ $(document).ready(function() {
         add();
     }
 
+    //Load the graph, performing three steps in sequence (load nodes, position nodes, connect nodes)
     grapher.auto_load = function() {
         $('#overlay').show();
         $('#loadingcircle').show();
@@ -566,6 +567,7 @@ $(document).ready(function() {
         }
     }
 
+    //Called by the get_friends_ids Dajax method
     grapher.auto_add_nodes = function (node_names) {
         grapher.add_nodes(node_names);
         $('#overlay').show();
@@ -580,6 +582,7 @@ $(document).ready(function() {
         });
     }
 
+    //called by the position_friends Dajax method
     grapher.auto_set_positions = function(node_positions) {
         grapher.set_positions(node_positions);
         $('#overlay').show();
@@ -640,6 +643,8 @@ $(document).ready(function() {
         }
     }
 
+    //Called by the position_friends Dajax method when still waiting for the friend connections
+    //to be downloaded from Facebook
     grapher.waitToPosition = function(args) {
         var djangoargs = {
             'engine': grapher.engine,

@@ -15,6 +15,7 @@ def index(request):
 	#print reverse('fbauth.views.login')
 	return render_to_response('fbauth/index.html', {'app_id': settings.APP_ID, 'redirect_url': "http://"+request.get_host() + reverse('fbauth.views.login') }, context_instance=RequestContext(request))
 
+#Facebook's API redirects to this page to transfer the auth key
 def login(request):
 	print "In login view"
 	print request.session
@@ -42,16 +43,16 @@ def login(request):
 		request.session['access_token'] = access_token
 		return HttpResponseRedirect(reverse('fbauth.views.grapher'))
 
+#This view has all the graphing functionality.
 def grapher(request):
 	if ('access_token' not in request.session):
 		print request.session
 		return HttpResponseRedirect(reverse('fbauth.views.index'))
 	if ('fbuser' not in request.session): request.session['fbuser'] = Fbuser(request.session['access_token'])
 
-
 	u = request.session['fbuser']
 	print "Access token: %s" % u.access_token
-	#f = u.get_friends()
+	#Pull the user's facebook friends if they are not recently updated
 	if (not u.recently_updated()):
 		print("Not recently updated")
 		u.create_friends()
@@ -62,4 +63,3 @@ def grapher(request):
 		connection_processor = Thread(target=u.connect_friends)
 		connection_processor.start()
 	return render_to_response('fbauth/graph.html', context_instance = RequestContext(request))
-	#return HttpResponse('<br />'.join([x['name'] for  x in f]))

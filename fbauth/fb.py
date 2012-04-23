@@ -6,7 +6,11 @@ from django.db import connection, transaction
 import datetime
 from collections import deque
 
+
+#This class represents a logged-in user. It handles all relevant communication with the Facebook API to obtain
+#information about said user.
 class Fbuser:
+	#Requires an access token from Facebook to access API
 	def __init__(self, access_token):
 		self.access_token = access_token
 		data = self.read_and_parse_json('/me')
@@ -15,6 +19,7 @@ class Fbuser:
 		self.updated_friends_queue = deque()
 		self.links = None
 
+	#Helper method that contacts a specific API endpoint
 	def read_and_parse_json(self, url, argdict = {}):
 		#argstr = '&'.join([x[0] + '=' + x[1] for x in argdict.items()])
 		argstr = urlencode(argdict)
@@ -31,6 +36,7 @@ class Fbuser:
 		#If paging is used and response includes a data section, merge sections together
 		return json.loads(jsonresponse)
 
+	#Helper method that joins together results that Facebook splits into multiple pages
 	def concat_data_pages(self, url, argdict = {}):
 		parsedjson = self.read_and_parse_json(url, argdict)
 		data = []
@@ -41,13 +47,16 @@ class Fbuser:
 
 		return data
 
+	#Get friends from the API
 	def get_friends(self):
 		friends = self.concat_data_pages('/me/friends')
 		return friends
 
+	#Run a FQL query
 	def run_fql(self, query):
 		return self.read_and_parse_json('/fql', {"q":query})
 
+	#Find connections between the user's friends
 	def get_mutual_friends(self, limit=4500):
 		#FQL line limit is undocumented but is somewhere around 5000
 		#There will be some overlap at the end/beginning of each query and some duplicate results
@@ -65,8 +74,8 @@ class Fbuser:
 			startID = mf["data"][-1]["uid1"]
 		return data
 
+	#Determines whether to update the user's connections
 	def recently_updated(self, td = datetime.timedelta(2)):
-		#return False
 		#Default definition of "recently" is the past 2 days
 		try:
 			me = Person.objects.get(id = self.id)
@@ -78,7 +87,7 @@ class Fbuser:
 			else:
 				return (datetime.date.today()-me.last_updated) < td
 
-
+	#Puts the user's friends in the database
 	def create_friends(self):
 		friends = self.get_friends()
 		try:
@@ -106,18 +115,7 @@ class Fbuser:
 		print "Connecting friends"
 		#Get cursor from db wrapper
 		cursor = connection.cursor()
-		#cursor.write("BEGIN TRANSACTION")
 
-		#Super slow. Replace with a custom SQL insert query
-		#MySQL version:
-		#INSERT IGNORE INTO "fbauth_person_friends" ("from_person_id", "to_person_id") VALUES (p1, p2), (p2, p1) ...
-		#values = ",".join(["("+r['uid1'] + "," + r['uid2'] + "), ("+r['uid2']+","+r['uid1']+")" for r in mf])
-
-		#SQLite version:
-		#BEGIN TRANSACTION;
-		#INSERT OR IGNORE INTO "fbauth_person_friends" ("from_person_id", "to_person_id") VALUES (p1, p2)
-		#...
-		#COMMIT;
 		mf = self.get_mutual_friends()
 		i = 0
 		while (i < len(mf)):
@@ -131,18 +129,7 @@ class Fbuser:
 			transaction.commit_unless_managed()
 			i += 500
 
-		#SQLite:
-		#mf = self.get_mutual_friends()
-		#insertstr = "INSERT OR IGNORE INTO fbauth_connection (from_person_id, to_person_id) VALUES"
-
-		#cursor.execute("BEGIN TRANSACTION")
-		#for r in mf:
-		#	cursor.execute(insertstr+" (%s,%s)", params=[str(r['uid1']), str(r['uid2'])])
-		#	cursor.execute(insertstr+" (%s,%s)", params=[str(r['uid2']), str(r['uid1'])])
-		#transaction.commit_unless_managed()
-
-
-		#SLOWWWW version:
+		#Doing this through Django's interface is painfully slow:
 		#mf = self.get_mutual_friends()
 		#prevp1 = None
 		#p1 = None
@@ -156,12 +143,14 @@ class Fbuser:
 		#		print "Saved friends for %s" % prevp1.name
 		#p1.save()
 		#print "Saved friends for %s" % p1.name
+
 		print "Finished creating models"
 		me = Person.objects.get(id=self.id)
 		me.connections_ready = True
 		me.save()
 		print "connections_ready = " + str(me.connections_ready)
 
+	#Create a graph structure of all friends
 	def get_friends_graph(self):
 		print "Started printing friends graph"
 		user = Person.objects.select_related().get(id=self.id)
@@ -183,15 +172,18 @@ class Fbuser:
 		print "Created result"
 		return result
 
+	#Return friend IDs from the database
 	def get_friend_ids(self):
 		print "Creating list of friend IDs (all node IDs)"
 		user = Person.objects.select_related().get(id=self.id)
 		return [f.id for f in user.friends.all()]
 
+	#Return friend names from the database
 	def get_friend_names(self):
 		user = Person.objects.select_related().get(id=self.id)
 		return {f.id:f.name for f in user.friends.all()}
 
+	#Return connections between friends from the database
 	def get_friends_links(self):
 		if (self.links != None):
 			return self.links
