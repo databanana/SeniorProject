@@ -169,8 +169,8 @@ def get_rank(request, algorithm, min_radius, max_radius):
 			rank = G_wrapper.calculate_eigenvector_centrality()
 			request.session['eigenvector'] = rank
 	elif algorithm=='Degree':
-		if false:
-		#if 'degree' in request.session:
+		#if False:
+		if 'degree' in request.session:
 			rank = request.session['degree']
 		else:
 			rank = G_wrapper.calculate_degree_centrality()
