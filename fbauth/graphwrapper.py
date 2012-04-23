@@ -237,7 +237,8 @@ class GraphWrapper:
 			current_pow = current_pow*2
 
 		#Return results
-		pr = pr_initial * pr_curr
+		#pr = pr_initial * pr_curr
+		pr = np.dot(pr_initial, pr_curr)
 		pr = [rank for row in pr.tolist() for rank in row]
 		return {x[0]:x[1] for x in zip(self.G.nodes(), pr)}
 
