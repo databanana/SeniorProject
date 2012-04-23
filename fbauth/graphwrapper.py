@@ -217,15 +217,15 @@ class GraphWrapper:
 	def calculate_pagerank(self, damping=0.85):
 		#A random crawler will travel upon every outgoing edge with equal probability
 		#The crawler will jump to another node with P=1-damping
-		m = nx.to_numpy_matrix(self.G)
-		pr_transition = nx.to_numpy_matrix(self.G)
+		m = np.array(nx.to_numpy_matrix(self.G))
+		#pr_transition = nx.to_numpy_matrix(self.G)
 		pr_transition = (m / np.sum(m,1))*damping + (1-damping)/self.numNodes
 		pr_transition[np.isnan(pr_transition)] = 0
 		#Initial probability is equal across nodes
 		pr_initial = np.ones([1, self.numNodes]) * 1/self.numNodes
 		#Multiply continuously and check for convergence
 		eps = .00001
-		max_pow = 200
+		max_pow = 100
 
 		pr_prev = pr_transition
 		pr_curr = np.dot(pr_prev, pr_prev)
